@@ -1,0 +1,28 @@
+.button {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    color: #000000;
+    background-color: var(--bs-body-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.5s;
+    padding: 0;
+    border: none;
+    outline: none;
+    text-decoration: none;
+    background-size: 100% 100%;
+}
+
+.disabled {
+    background-color: #434343;
+    cursor: default;
+}
+
+@media (hover: hover) {
+    .button:not(.disabled):hover {
+        background-color: var(--bs-tertiary-color);
+    }
+}

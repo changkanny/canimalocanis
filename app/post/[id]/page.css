@@ -1,0 +1,41 @@
+.znc aside.message {
+
+    color: var(--bs-body-color) !important;
+    background-color: var(--bs-warning-bg-subtle) !important;
+}
+
+.znc .msg-symbol {
+
+    background-color: var(--bs-warning-border-subtle) !important;
+}
+
+.znc aside.msg.alert {
+
+    color: var(--bs-body-color) !important;
+    background-color: var(--bs-danger-bg-subtle) !important;
+}
+
+.znc aside.msg.alert .msg-symbol {
+
+    background-color: var(--bs-danger-border-subtle) !important;
+}
+
+.znc blockquote {
+
+    color: var(--bs-body-color) !important;
+}
+
+.znc th {
+
+    background-color: var(--bs-secondary-bg) !important;
+}
+
+.znc td {
+
+    background-color: var(--bs-body-bg) !important;
+}
+
+.zenn-embedded-card {
+
+    background-color: var(--bs-secondary-bg) !important;
+}

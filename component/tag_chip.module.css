@@ -1,0 +1,135 @@
+.tag {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+    margin-block: 0.1rem;
+    transition: color 0.5s;
+    transition: background-color 0.5s;
+}
+
+.lightGray {
+    color: #ffffff;
+    background-color: #2d2d2d;
+}
+.gray {
+    color: #ffffff;
+    background-color: #454545;
+}
+.brown {
+    color: #ffffff;
+    background-color: #321808;
+}
+.orange {
+    color: #ffffff;
+    background-color: #513701;
+}
+.yellow {
+    color: #ffffff;
+    background-color: #464600;
+}
+.green {
+    color: #ffffff;
+    background-color: #243a00;
+}
+.blue {
+    color: #ffffff;
+    background-color: #001b37;
+}
+.purple {
+    color: #ffffff;
+    background-color: #290046;
+}
+.pink {
+    color: #ffffff;
+    background-color: #3b0126;
+}
+.red {
+    color: #ffffff;
+    background-color: #410010;
+}
+
+.highLightGray {
+    color: #000000;
+    background-color: #dad8d8;
+}
+.highGray {
+    color: #000000;
+    background-color: #939393; 
+}
+.highBrown {
+    color: #000000;
+    background-color: #b7581c;
+}
+.highOrange {
+    color: #000000;
+    background-color: #ffae00;
+}
+.highYellow {
+    color: #000000;
+    background-color: #ffff00;
+}
+.highGreen {
+    color: #000000;
+    background-color: #79c500;
+}
+.highBlue {
+    color: #000000;
+    background-color: #0080ff;
+}
+.highPurple {
+    color: #000000;
+    background-color: #9501ff;
+}
+.highPink {
+    color: #000000;
+    background-color: #ff00a6;
+}
+.highRed {
+    color: #000000;
+    background-color: #ff0040;
+}
+
+@media (hover: hover) {
+    .lightGray:hover {
+        color: #000000;
+        background-color: #dad8d8;
+    }
+    .gray:hover {
+        color: #000000;
+        background-color: #939393; 
+    }
+    .brown:hover {
+        color: #000000;
+        background-color: #b7581c;
+    }
+    .orange:hover {
+        color: #000000;
+        background-color: #ffae00;
+    }
+    .yellow:hover {
+        color: #000000;
+        background-color: #ffff00;
+    }
+    .green:hover {
+        color: #000000;
+        background-color: #79c500;
+    }
+    .blue:hover {
+        color: #000000;
+        background-color: #0080ff;
+    }
+    .purple:hover {
+        color: #000000;
+        background-color: #9501ff;
+    }
+    .pink:hover {
+        color: #000000;
+        background-color: #ff00a6;
+    }
+    .red:hover {
+        color: #000000;
+        background-color: #ff0040;
+    }
+}
