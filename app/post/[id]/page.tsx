@@ -11,12 +11,12 @@ import { Metadata } from "next";
 // 1 時間ごとに再生成する
 export const revalidate = 3600;
 
-interface PostProps {
+interface PostPageProps {
     params: Promise<{id: string;}>;
 }
 
 export async function generateMetadata(
-    { params }: PostProps,
+    { params }: PostPageProps,
 ): Promise<Metadata> {
 
     // 記事 ID
@@ -30,7 +30,7 @@ export async function generateMetadata(
     };
 }
 
-export default async function Post({ params }: PostProps) {
+export default async function PostPage({ params }: PostPageProps) {
 
     // 記事 ID
     const postId = (await params).id;
@@ -44,7 +44,7 @@ export default async function Post({ params }: PostProps) {
     }
 
     return (
-        <div className="container">
+        <div>
             <Script src="https://embed.zenn.studio/js/listen-embed-event.js" strategy="beforeInteractive" />
             <Header />
             <main>

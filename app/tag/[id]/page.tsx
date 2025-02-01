@@ -70,7 +70,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     const tagList: Array<Tag> = await getAllTag();
 
     return (
-        <div className="container">
+        <div>
             <Header />
             <main>
                 {showingPostList.length > 0 && (

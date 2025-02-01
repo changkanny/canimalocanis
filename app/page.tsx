@@ -13,12 +13,12 @@ import { Metadata } from "next";
 // 1 時間ごとに再生成する
 export const revalidate = 3600;
 
-interface HomeProps {
+interface HomePageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export async function generateMetadata(
-    { searchParams }: HomeProps,
+    { searchParams }: HomePageProps,
 ): Promise<Metadata> {
 
     // 現在のページ
@@ -29,7 +29,7 @@ export async function generateMetadata(
     }
 }
 
-export default async function Home({ searchParams }: HomeProps) {
+export default async function HomePage({ searchParams }: HomePageProps) {
 
     // ページ
     const page = parseInt((await searchParams).page as string, 10) || 1;
@@ -60,7 +60,7 @@ export default async function Home({ searchParams }: HomeProps) {
     const tagList: Array<Tag> = await getAllTag();
 
     return (
-        <div className="container">
+        <div>
             <Header />
             <main>
                 {showingPostList.map((post) => (
