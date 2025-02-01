@@ -150,11 +150,11 @@ export async function getBody(pageId: string): Promise<PostBody | null> {
 function toPostFromGetPageResponse(response: GetPageResponse): Post | null {
 
     // 公開フラグ
-    // @ts-ignore
+    // @ts-expect-error Have a nice day!
     const isPublished: boolean = response.properties.isPublished.checkbox ?? false;
 
     // 公開日時
-    // @ts-ignore
+    // @ts-expect-error Have a nice day!
     const publishedAt: string | null = response.properties.publishedAt.date.start;
 
     // 公開されていないときは、null を返却する
@@ -167,7 +167,7 @@ function toPostFromGetPageResponse(response: GetPageResponse): Post | null {
     const id: string = response.id;
 
     // タイトル
-    // @ts-ignore
+    // @ts-expect-error Have a nice day!
     const title: string | null = response.properties.title.title[0]?.plain_text ?? null;
 
     // タイトルがないときは、null を返却する
@@ -178,7 +178,7 @@ function toPostFromGetPageResponse(response: GetPageResponse): Post | null {
 
     // タグ
     const tagList: Array<Tag> = [];
-    // @ts-ignore
+    // @ts-expect-error Have a nice day!
     for (const tag of response.properties.tag.multi_select) {
 
         tagList.push(
@@ -192,7 +192,7 @@ function toPostFromGetPageResponse(response: GetPageResponse): Post | null {
     }
 
     // 更新日時
-    // @ts-ignore
+    // @ts-expect-error Have a nice day!
     let updatedAt: string | null = response.last_edited_time;
 
     // 更新日時が公開日時より過去のときは、更新日時を指定しない

@@ -1,17 +1,15 @@
 import Footer from "@/component/footer";
 import Header from "@/component/header";
 import PostHeader from "@/component/post_header";
-import { CommonConstant } from "@/constant/common";
 import { getBody, getAllPost } from "@/lib/notion";
-import Head from "next/head";
 import { notFound } from "next/navigation";
 import Script from "next/script";
 import 'zenn-content-css';
 import './page.css';
-import { Metadata, ResolvingMetadata } from "next";
+import { Metadata } from "next";
 
 // 1 時間ごとに再生成する
-export const revalidate = CommonConstant.REVALIDATE;
+export const revalidate = 3600;
 
 interface PostProps {
     params: Promise<{id: string;}>;
@@ -19,7 +17,6 @@ interface PostProps {
 
 export async function generateMetadata(
     { params }: PostProps,
-    parent: ResolvingMetadata
 ): Promise<Metadata> {
 
     // 記事 ID

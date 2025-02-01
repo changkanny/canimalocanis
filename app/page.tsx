@@ -8,10 +8,10 @@ import { Tag } from "@/interface/tag";
 import TagChip from "@/component/tag_chip";
 import Footer from "@/component/footer";
 import { notFound } from "next/navigation";
-import { Metadata, ResolvingMetadata } from "next";
+import { Metadata } from "next";
 
 // 1 時間ごとに再生成する
-export const revalidate = CommonConstant.REVALIDATE;
+export const revalidate = 3600;
 
 interface HomeProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -19,7 +19,6 @@ interface HomeProps {
 
 export async function generateMetadata(
     { searchParams }: HomeProps,
-    parent: ResolvingMetadata
 ): Promise<Metadata> {
 
     // 現在のページ
