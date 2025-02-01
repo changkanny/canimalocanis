@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Zen_Maru_Gothic } from "next/font/google";
 import 'bootstrap/dist/css/bootstrap.min.css'
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import './global.css';
 
 const font = Zen_Maru_Gothic({
     subsets: ["latin"],
@@ -23,6 +26,8 @@ export default function RootLayout({
         <html lang="jp" data-bs-theme="dark">
             <body className={`${font.className}`}>
                 {children}
+                <Analytics />
+                <SpeedInsights />
             </body>
         </html>
     );
