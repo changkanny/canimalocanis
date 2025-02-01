@@ -1,0 +1,15 @@
+.title {
+    font-size: 1.25rem;
+    color: var(--bs-body-color);
+    font-weight: bold;
+    text-underline-offset: 0.25rem;
+    transition: color 0.5s;
+}
+
+.bigger {
+    font-size: 2rem;
+}
+
+.title:hover {
+    color: var(--bs-tertiary-color);
+}
