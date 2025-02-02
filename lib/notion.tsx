@@ -130,7 +130,7 @@ export async function getBody(pageId: string): Promise<PostBody | null> {
     const markdown = getN2M().toMarkdownString(await getN2M().pageToMarkdown(pageId));
 
     // マークダウンを HTML に変換する
-    const html = zennMarkdownHtml(markdown.parent, {
+    const html = zennMarkdownHtml(replaceWithZennNotation(markdown.parent), {
         embedOrigin: "https://embed.zenn.studio", // これを指定しないと埋め込み要素が表示されないよ！
     });
 
@@ -323,14 +323,47 @@ function getN2M(): NotionToMarkdown {
         // パラグラフの最初の要素
         const first = block.paragraph.rich_text[0];
 
-        // ...が、自身のほかの記事へのメンションのとき
+        if (first == null) {
+
+            return false;
+        }
+
         if ("mention" in first && "page" in first.mention) {
 
             return `@[card](${process.env.HOST}/post/${first.mention.page.id})`;
+        }
+
+        if ("mention" in first && "link_preview" in first.mention) {
+
+            return `@[card](${first.mention.link_preview.url})`;
+        }
+
+        if ("mention" in first && "link_mention" in first.mention) {
+
+            // @ts-expect-error Have a nice day!
+            return `@[card](${first.mention.link_mention.href})`;
         }
 
         return false;
     });
 
     return n2m;
+}
+
+/**
+ *  Markdown 形式の文字列のうち、該当するものを Zenn 記法に変換する
+ * 
+ *  @param {string} markdown 変換する文字列
+ *  @returns {string} 変換した文字列
+ */
+function replaceWithZennNotation(markdown: string): string {
+
+    let convertedMarkdown = markdown;
+
+    // トグル
+    convertedMarkdown = convertedMarkdown
+        .replace(/<details>\s*<summary>(.*?)<\/summary>/g, ':::details $1')
+        .replace(/<\/details>/g, ':::');
+
+    return convertedMarkdown;
 }

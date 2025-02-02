@@ -39,3 +39,13 @@
 
     background-color: var(--bs-secondary-bg) !important;
 }
+
+.znc summary {
+
+    background-color: var(--bs-body-bg) !important;
+}
+
+.znc .details-content {
+
+    background-color: var(--bs-body-bg) !important;
+}
