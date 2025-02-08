@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export default function NotFound() {
     return (
-        <div className="container">
+        <div>
             <title>Not Found | Canimalocanis</title>
             <Header />
             <main>

@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 export default function ErrorPage() {
     return (
-        <div className="container">
+        <div>
             <title>Server Error | Canimalocanis</title>
             <Header />
             <main>
