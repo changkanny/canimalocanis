@@ -9,6 +9,10 @@ export default function PostHeader(
 
     return (
         <div className="mb-4">
+            <div
+                className={styles.thumbnail}
+                style={{ backgroundImage: `url(${post.thumbnail ?? "/default.png"})` }}
+            ></div>
             <div className="mb-1">
                 <span className={`${styles.title}`}>{post.title}</span>
             </div>

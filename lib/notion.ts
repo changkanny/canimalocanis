@@ -42,10 +42,11 @@ export async function getAllPost(): Promise<Array<Post>> {
     });
 
     // 記事
-    const postList = response.results
-        .filter((result): result is GetPageResponse => 'properties' in result)
-        .map((result) => toPostFromGetPageResponse(result))
-        .filter((post): post is Post => post !== null);
+    const postList = (await Promise.all(
+        response.results
+            .filter((result): result is GetPageResponse => 'properties' in result)
+            .map((result) => toPostFromGetPageResponse(result))
+    )).filter((post): post is Post => post !== null);
 
     // 公開フラグが false のもの、または公開日時が未来のものは除外する
     return postList.filter((post) => post.isPublished && Date.parse(post.publishedAt) <= Date.now());
@@ -121,7 +122,7 @@ export async function getBody(pageId: string): Promise<PostBody | null> {
 
     // 指定されたページ ID の情報を取得する
     const response = await notion.pages.retrieve({ page_id: pageId });
-    const post = toPostFromGetPageResponse(response);
+    const post = await toPostFromGetPageResponse(response);
 
     // 公開されていないときや、記事が見つからなかったときは、処理を中断する
     if (post === null) {
@@ -160,7 +161,7 @@ export async function getBody(pageId: string): Promise<PostBody | null> {
  * @param {GetPageResponse} response GetPageResponse
  * @returns {Promise<Post | null>} Post
  */
-function toPostFromGetPageResponse(response: GetPageResponse): Post | null {
+async function toPostFromGetPageResponse(response: GetPageResponse): Promise<Post | null> {
 
     // 公開フラグ
     // @ts-expect-error Have a nice day!
@@ -214,6 +215,10 @@ function toPostFromGetPageResponse(response: GetPageResponse): Post | null {
         updatedAt = null;
     }
 
+    // サムネイル
+    // @ts-expect-error Have a nice day!
+    const s3ThumbnailUrl: string | null = response.properties.thumbnail.files[0]?.file.url ?? null;
+
     return {
         id: id,
         title: title,
@@ -221,6 +226,9 @@ function toPostFromGetPageResponse(response: GetPageResponse): Post | null {
         publishedAt: publishedAt,
         updatedAt: updatedAt,
         isPublished: isPublished,
+        thumbnail: s3ThumbnailUrl != null
+            ? (await getVercelBlobUrl(`thumbnail-${id}`, s3ThumbnailUrl) ?? s3ThumbnailUrl)
+            : null,
     };
 }
 
@@ -294,7 +302,7 @@ function getN2M(): NotionToMarkdown {
             const id = block.id;
             const s3Url = block.image.file.url;
 
-            text = `![${caption ?? ""}](${await getVercelBlobUrl(id, s3Url) ?? s3Url})`;
+            text = `![${caption ?? ""}](${await getVercelBlobUrl(`body-${id}`, s3Url) ?? s3Url})`;
         }
 
         if (caption) {
