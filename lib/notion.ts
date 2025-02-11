@@ -378,7 +378,7 @@ function getN2M(): NotionToMarkdown {
  */
 async function getVercelBlobUrl(id: string, originalImageUrl: string): Promise<string | null> {
 
-    const imageName = `${id}.jpeg`;
+    const imageName = `${process.env.BLOB_IMAGE_PREFIX ?? ""}${id}.jpeg`;
     let imageUrl: string | null = null;
 
     try {
@@ -410,7 +410,7 @@ async function getVercelBlobUrl(id: string, originalImageUrl: string): Promise<s
             console.log(`Uploaded to Vercel Blob: ${imageName}`);
         } catch (error) {
 
-            console.log(`Error Occurred While uploading: ${error}`);
+            console.log(`Error occurred while putting: ${error}`);
         }
     }
 
