@@ -10,13 +10,6 @@ const font = Zen_Maru_Gothic({
     weight: ["300", "400", "500", "700", "900"],
 });
 
-export const metadata: Metadata = {
-    title: {
-        template: '%s | Canimalocanis',
-        default: 'Canimalocanis',
-    }
-};
-
 export default function RootLayout({
     children,
 }: Readonly<{

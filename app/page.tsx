@@ -22,11 +22,35 @@ export async function generateMetadata(
 ): Promise<Metadata> {
 
     // 現在のページ
-    const currentPage = parseInt((await searchParams).page as string, 10) || 1;
+    const page = parseInt((await searchParams).page as string, 10) || 1;
 
-    return currentPage === 1 ? {} : {
-        title: `ページ ${currentPage} | Canimalocanis`,
-    }
+    // タイトル
+    const title = page === 1 ? 'Canimalocanis' : `ページ ${page} | Canimalocanis`;
+
+    return {
+        title: title,
+        openGraph: {
+            title: title,
+            siteName: 'Canimalocanis',
+            type: 'website',
+            locale: 'ja_JP',
+            images: {
+                url: `${process.env.HOST}/og.png`,
+                width: 1200,
+                height: 630,
+            },
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: title,
+            site: 'Canimalocanis',
+            images: {
+                url: `${process.env.HOST}/og.png`,
+                width: 1200,
+                height: 630,
+            },
+        },
+    };
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
