@@ -7,7 +7,6 @@ import Script from "next/script";
 import 'zenn-content-css';
 import './page.css';
 import { Metadata } from "next";
-import { ImageResponse } from '@vercel/og';
 
 // 1 時間ごとに再生成する
 export const revalidate = 3600;
