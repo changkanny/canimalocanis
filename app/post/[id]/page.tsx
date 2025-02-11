@@ -25,6 +25,8 @@ export async function generateMetadata(
     const post = await getBody(postId);
     // タイトル
     const title = `${post?.title} | Canimalocanis`;
+    // サムネイルの URL
+    const thumbnail = post?.thumbnail || `${process.env.HOST}/default-og.png`;
 
     return {
         title: title,
@@ -33,11 +35,21 @@ export async function generateMetadata(
             siteName: 'Canimalocanis',
             type: 'article',
             locale: 'ja_JP',
+            images: {
+                url: thumbnail,
+                width: 1200,
+                height: 630,
+            }
         },
         twitter: {
             card: 'summary_large_image',
             title: title,
             site: 'Canimalocanis',
+            images: {
+                url: thumbnail,
+                width: 1200,
+                height: 630,
+            }
         },
     };
 }
