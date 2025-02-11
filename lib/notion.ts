@@ -5,6 +5,9 @@ import { GetPageResponse, RichTextItemResponse } from "@notionhq/client/build/sr
 import { NotionToMarkdown } from "notion-to-md";
 import zennMarkdownHtml from 'zenn-markdown-html';
 import { notionRichTextToMarkdown } from "notion-rich-text-to-markdown";
+import { put, head, BlobNotFoundError } from '@vercel/blob';
+import sharp from 'sharp';
+import * as cheerio from 'cheerio';
 
 // Notion クライアント
 const notion = new Client({
@@ -127,17 +130,27 @@ export async function getBody(pageId: string): Promise<PostBody | null> {
     }
     
     // ページをマークダウン形式で取得する
-    const markdown = getN2M().toMarkdownString(await getN2M().pageToMarkdown(pageId));
+    let markdown = getN2M().toMarkdownString(await getN2M().pageToMarkdown(pageId)).parent;
+
+    // トグルを Zenn 記法に変換する
+    // * NotionToMarkdown#setCustomTransformer ではうまくいかない...
+    markdown = markdown
+        .replace(/<details>\s*<summary>(.*?)<\/summary>/g, ':::details $1')
+        .replace(/<\/details>/g, ':::');
 
     // マークダウンを HTML に変換する
-    const html = zennMarkdownHtml(replaceWithZennNotation(markdown.parent), {
+    const html = zennMarkdownHtml(markdown, {
         embedOrigin: "https://embed.zenn.studio", // これを指定しないと埋め込み要素が表示されないよ！
     });
+
+    // img タグに loading="lazy" を追加する
+    const $ = cheerio.load(html);
+    $('img').attr('loading', 'lazy');
 
     // 本文を返却する
     return {
         ...post,
-        body: html,
+        body: $.html(),
     };
 };
 
@@ -269,15 +282,19 @@ function getN2M(): NotionToMarkdown {
 
         let text = "";
 
-        // キャプション
         const caption = block.image.caption.map((item) => item.plain_text).join('');
 
         if (block.image.type === 'external') {
+
             text = `![${caption ?? ""}](${block.image.external.url})`;
         }
 
         if (block.image.type === 'file') {
-            text = `![${caption ?? ""}](${block.image.file.url})`;
+
+            const id = block.id;
+            const s3Url = block.image.file.url;
+
+            text = `![${caption ?? ""}](${await getVercelBlobUrl(id, s3Url) ?? s3Url})`;
         }
 
         if (caption) {
@@ -351,19 +368,74 @@ function getN2M(): NotionToMarkdown {
 }
 
 /**
- *  Markdown 形式の文字列のうち、該当するものを Zenn 記法に変換する
+ *  Vercel Blob に保存している画像の URL を取得する
  * 
- *  @param {string} markdown 変換する文字列
- *  @returns {string} 変換した文字列
+ *  Vercel Blob に画像がないときは、画像をアップロードして URL を取得します。
+ * 
+ *  @param {string} id 画像 ID
+ *  @param {string} originalImageUrl Notion から取得した画像の URL
+ *  @returns {Promise<string | null>} Vercel Blob に保存している画像の URL
  */
-function replaceWithZennNotation(markdown: string): string {
+async function getVercelBlobUrl(id: string, originalImageUrl: string): Promise<string | null> {
 
-    let convertedMarkdown = markdown;
+    const imageName = `${id}.jpeg`;
+    let imageUrl: string | null = null;
 
-    // トグル
-    convertedMarkdown = convertedMarkdown
-        .replace(/<details>\s*<summary>(.*?)<\/summary>/g, ':::details $1')
-        .replace(/<\/details>/g, ':::');
+    try {
 
-    return convertedMarkdown;
+        imageUrl = (await head(imageName)).url;
+
+        console.log(`Found on Vercel Blob: ${imageName}`);
+    } catch (error) {
+
+        console.log(
+            error instanceof BlobNotFoundError
+                ? `Not found on Vercel Blob: ${imageName}`
+                : `Error occurred while heading: ${error}`
+        )
+    }
+
+    if (imageUrl == null) {
+
+        try {
+
+            const arrayBuffer = await (await fetch(originalImageUrl)).arrayBuffer();
+            const compressedBuffer = await compressImage(Buffer.from(arrayBuffer), 0.3);
+
+            imageUrl = (await put(imageName, compressedBuffer, {
+                access: "public",
+                addRandomSuffix: false,
+            })).url;
+
+            console.log(`Uploaded to Vercel Blob: ${imageName}`);
+        } catch (error) {
+
+            console.log(`Error Occurred While uploading: ${error}`);
+        }
+    }
+
+    return imageUrl;
+}
+
+/**
+ * 画像を圧縮する
+ * 
+ * @param {Buffer} inputBuffer 画像
+ * @param {number} maxSizeMB 最大サイズ（MB）
+ * @returns {Promise<Buffer>} 圧縮後の画像
+ */
+async function compressImage(inputBuffer: Buffer, maxSizeMB: number): Promise<Buffer> {
+    
+    let outputBuffer = inputBuffer;
+    let quality = 80;
+
+    while (outputBuffer.length / 1024 / 1024 > maxSizeMB && quality > 5) {
+        outputBuffer = await sharp(inputBuffer)
+        .rotate()
+        .jpeg({ quality })
+        .toBuffer();
+        quality -= 5;
+    }
+
+    return outputBuffer;
 }
