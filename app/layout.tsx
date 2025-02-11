@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Zen_Maru_Gothic } from "next/font/google";
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { Analytics } from "@vercel/analytics/react"
