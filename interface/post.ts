@@ -20,6 +20,9 @@ export interface Post {
 
     /// 更新日
     updatedAt?: string | null,
+
+    /// サムネイル
+    thumbnail?: string | null,
 }
 
 /// 本文

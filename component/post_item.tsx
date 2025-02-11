@@ -9,11 +9,17 @@ export default function PostItem(
 
     return (
         <div key={post.id} className="mb-4">
-            <div className="mb-1">
-                <a href={`/post/${post.id}`} className={`${styles.title}`}>
-                    {post.title}
-                </a>
-            </div>
+            <a href={`/post/${post.id}`} className={styles.link}>
+                <div
+                    className={styles.thumbnail}
+                    style={{ backgroundImage: `url(${post.thumbnail ?? "/default.png"})` }}
+                ></div>
+                <div className="mb-1">
+                    <span className={styles.title}>
+                        {post.title}
+                    </span>
+                </div>
+            </a>
             {post.tagList.length > 0 && (
                 <div className="mt-1 mb-1">
                     {post.tagList.map((tag) => (

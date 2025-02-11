@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Zen_Maru_Gothic } from "next/font/google";
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { Analytics } from "@vercel/analytics/react"
@@ -9,13 +8,6 @@ const font = Zen_Maru_Gothic({
     subsets: ["latin"],
     weight: ["300", "400", "500", "700", "900"],
 });
-
-export const metadata: Metadata = {
-    title: {
-        template: '%s | Canimalocanis',
-        default: 'Canimalocanis',
-    }
-};
 
 export default function RootLayout({
     children,

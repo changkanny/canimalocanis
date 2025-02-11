@@ -26,15 +26,35 @@ export async function generateMetadata(
     const page = parseInt((await searchParams).page as string, 10) || 1;
     // タグ ID
     const tagId = (await params).id;
-
     // タグ名
     const tagName = (await getAllTag()).find((tag) => tag.id == tagId)?.name;
+    // タイトル
+    const title = page === 1 ? `${tagName} | Canimalocanis` : `${tagName}（ページ ${page}） | Canimalocanis`;
 
     return {
-        title: page === 1
-            ? `${tagName}`
-            : `${tagName}（ページ ${page}）`,
-    }
+        title: title,
+        openGraph: {
+            title: title,
+            siteName: 'Canimalocanis',
+            type: 'website',
+            locale: 'ja_JP',
+            images: {
+                url: `${process.env.HOST}/og.png`,
+                width: 1200,
+                height: 630,
+            },
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: title,
+            site: 'Canimalocanis',
+            images: {
+                url: `${process.env.HOST}/og.png`,
+                width: 1200,
+                height: 630,
+            },
+        },
+    };
 }
 
 export default async function TagPage({ params, searchParams }: TagPageProps) {
