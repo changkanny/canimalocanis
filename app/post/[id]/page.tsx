@@ -24,29 +24,8 @@ export async function generateMetadata(
     const postId = (await params).id;
     // 記事
     const post = await getBody(postId);
-
-    if (post == null) {
-    
-        notFound();
-    }
-
     // タイトル
-    const title = `${post.title} | Canimalocanis`;
-    // サムネイルの URL
-    const thumbnail = post.thumbnail || `${process.env.HOST}/default-og.png`;
-
-    // 画像を 1200 x 630 に切り取る
-    const ogImage = new ImageResponse(
-        <img src={thumbnail} style={{
-            objectFit: 'cover',
-            width: '1200px',
-            height: '630px'
-        }} />,
-        {
-            width: 1200,
-            height: 630,
-        }
-    );
+    const title = `${post?.title} | Canimalocanis`;
 
     return {
         title: title,
@@ -55,21 +34,11 @@ export async function generateMetadata(
             siteName: 'Canimalocanis',
             type: 'article',
             locale: 'ja_JP',
-            images: {
-                url: ogImage.url,
-                width: 1200,
-                height: 630,
-            },
         },
         twitter: {
             card: 'summary_large_image',
             title: title,
             site: 'Canimalocanis',
-            images: {
-                url: ogImage.url,
-                width: 1200,
-                height: 630,
-            },
         },
     };
 }
