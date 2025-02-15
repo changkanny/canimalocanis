@@ -7,12 +7,17 @@ import zennMarkdownHtml from 'zenn-markdown-html';
 import { notionRichTextToMarkdown } from "notion-rich-text-to-markdown";
 import * as cheerio from 'cheerio';
 import { Format, getImageUrl } from "@/lib/image";
+import { format, parseISO } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
+
+const JAPAN_TIMEZONE: string = "Asia/Tokyo";
+const DATE_FORMAT: string = "yyyy-MM-dd";
 
 const notion = new Client({
     auth: process.env.NOTION_TOKEN,
 });
 
-let cache: { postList: Array<Post> | null, tagList: Array<Tag> | null } = { postList: null, tagList: null };
+const cache: { postList: Array<Post> | null, tagList: Array<Tag> | null } = { postList: null, tagList: null };
 
 /**
  * 記事をすべて取得する
@@ -54,7 +59,7 @@ export async function getAllPost(): Promise<Array<Post>> {
     )).filter((post): post is Post =>
         post !== null &&
         post.isPublished &&
-        Date.parse(post.publishedAt) <= Date.now()
+        format(post.publishedAt, DATE_FORMAT) <= format(new Date(), DATE_FORMAT)
     );
 
     cache.postList = postList;
@@ -134,7 +139,8 @@ export async function getBody(pageId: string): Promise<PostBody | null> {
     }
     
     // ページをマークダウン形式で取得する
-    let markdown = getN2M(pageId).toMarkdownString(await getN2M(pageId).pageToMarkdown(pageId)).parent;
+    const n2m = getN2M(pageId);
+    let markdown = n2m.toMarkdownString(await n2m.pageToMarkdown(pageId)).parent;
 
     // トグルを Zenn 記法に変換する
     // * NotionToMarkdown#setCustomTransformer ではうまくいかないので、ごり押しする
@@ -172,7 +178,10 @@ async function toPostFromGetPageResponse(response: GetPageResponse): Promise<Pos
 
     // 公開日時
     // @ts-expect-error Have a nice day!
-    const publishedAt: string | null = response.properties.publishedAt.date.start;
+    const publishedAtString: string | null = response.properties.publishedAt.date.start;
+    const publishedAt: Date | null = publishedAtString != null
+        ? toZonedTime(parseISO(publishedAtString), JAPAN_TIMEZONE)
+        : null;
 
     // 公開されていないときは、null を返却する
     if (publishedAt == null) {
@@ -210,10 +219,16 @@ async function toPostFromGetPageResponse(response: GetPageResponse): Promise<Pos
 
     // 更新日時
     // @ts-expect-error Have a nice day!
-    let updatedAt: string | null = response.last_edited_time;
+    const updatedAtString: string | null = response.last_edited_time;
+    let updatedAt: Date | null = updatedAtString != null
+        ? toZonedTime(parseISO(updatedAtString), JAPAN_TIMEZONE)
+        : null;
 
-    // 更新日時が公開日時より過去のときは、更新日時を指定しない
-    if (updatedAt != null && Date.parse(updatedAt) < Date.parse(publishedAt)) {
+    // 更新日が公開日より過去のときは、更新日を指定しない
+    if (
+        updatedAt != null &&
+        format(updatedAt, DATE_FORMAT) <= format(publishedAt, DATE_FORMAT)
+    ) {
 
         updatedAt = null;
     }

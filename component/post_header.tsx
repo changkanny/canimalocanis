@@ -24,9 +24,9 @@ export default function PostHeader(
                 </div>
             )}
             <p className="text-muted">
-                <span>{format(new Date(post.publishedAt), "yyyy/M/d")}</span>
+                <span>{format(post.publishedAt, "yyyy/M/d")}</span>
                 {post.updatedAt && (
-                    <span>（{format(new Date(post.updatedAt), "yyyy/M/d")} に更新）</span>
+                    <span>（{format(post.updatedAt, "yyyy/M/d")} に更新）</span>
                 )}
             </p>
         </div>

@@ -16,10 +16,10 @@ export interface Post {
     isPublished: boolean,
 
     /// 公開日
-    publishedAt: string,
+    publishedAt: Date,
 
     /// 更新日
-    updatedAt?: string | null,
+    updatedAt?: Date | null,
 
     /// サムネイル
     thumbnail?: string | null,

@@ -28,7 +28,7 @@ export default function PostItem(
                 </div>
             )}
             <p className="text-muted">
-                <span>{format(new Date(post.publishedAt), "yyyy/M/d")}</span>
+                <span>{format(post.publishedAt, "yyyy/M/d")}</span>
             </p>
         </div>
     );
