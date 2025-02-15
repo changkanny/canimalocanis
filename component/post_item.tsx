@@ -1,7 +1,8 @@
-import { Post } from "@/interface/post";
+import { Post } from "@/lib/interface/post";
 import TagChip from "./tag_chip";
 import { format } from "date-fns";
 import styles from "./post_item.module.css";
+import { postLink } from "@/lib/helper";
 
 export default function PostItem(
     { post }: { post: Post }
@@ -9,7 +10,7 @@ export default function PostItem(
 
     return (
         <div key={post.id} className="mb-4">
-            <a href={`/post/${post.id}`} className={styles.link}>
+            <a href={`${postLink(post.id)}`} className={styles.link}>
                 <div
                     className={styles.thumbnail}
                     style={{ backgroundImage: `url(${post.thumbnail ?? "/default.png"})` }}
@@ -28,7 +29,7 @@ export default function PostItem(
                 </div>
             )}
             <p className="text-muted">
-                <span>{format(new Date(post.publishedAt), "yyyy/M/d")}</span>
+                <span>{format(post.publishedAt, "yyyy/M/d")}</span>
             </p>
         </div>
     );

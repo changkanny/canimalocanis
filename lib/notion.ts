@@ -1,27 +1,38 @@
-import { Post, PostBody } from "@/interface/post";
-import { Tag } from "@/interface/tag";
+import { Post, PostBody } from "@/lib/interface/post";
+import { Tag } from "@/lib/interface/tag";
 import { Client } from "@notionhq/client";
 import { GetPageResponse, RichTextItemResponse } from "@notionhq/client/build/src/api-endpoints";
 import { NotionToMarkdown } from "notion-to-md";
 import zennMarkdownHtml from 'zenn-markdown-html';
 import { notionRichTextToMarkdown } from "notion-rich-text-to-markdown";
-import { put, head, BlobNotFoundError } from '@vercel/blob';
-import sharp from 'sharp';
 import * as cheerio from 'cheerio';
+import { Format, getImageUrl } from "@/lib/image";
+import { format, parseISO } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
-// Notion クライアント
+const JAPAN_TIMEZONE: string = "Asia/Tokyo";
+const DATE_FORMAT: string = "yyyy-MM-dd";
+
 const notion = new Client({
     auth: process.env.NOTION_TOKEN,
 });
 
+const cache: { postList: Array<Post> | null, tagList: Array<Tag> | null } = { postList: null, tagList: null };
+
 /**
  * 記事をすべて取得する
- * 
- * 公開されているもののみを取得します。
  * 
  * @returns {Promise<Array<Post>>} 記事のリスト
  */
 export async function getAllPost(): Promise<Array<Post>> {
+
+    if (cache.postList != null) {
+        
+        console.log("Uses cached posts.");
+        return cache.postList;
+    }
+
+    console.log("Posts are not cached.");
 
     const response = await notion.databases.query({
         database_id: process.env.NOTION_DATABASE_ID as string,
@@ -41,15 +52,18 @@ export async function getAllPost(): Promise<Array<Post>> {
         ],
     });
 
-    // 記事
-    const postList = (await Promise.all(
+    const postList: Array<Post> = (await Promise.all(
         response.results
-            .filter((result): result is GetPageResponse => 'properties' in result)
-            .map((result) => toPostFromGetPageResponse(result))
-    )).filter((post): post is Post => post !== null);
+        .filter((result): result is GetPageResponse => 'properties' in result)
+        .map((result) => toPostFromGetPageResponse(result))
+    )).filter((post): post is Post =>
+        post !== null &&
+        post.isPublished &&
+        format(post.publishedAt, DATE_FORMAT) <= format(new Date(), DATE_FORMAT)
+    );
 
-    // 公開フラグが false のもの、または公開日時が未来のものは除外する
-    return postList.filter((post) => post.isPublished && Date.parse(post.publishedAt) <= Date.now());
+    cache.postList = postList;
+    return postList;
 };
 
 /**
@@ -58,18 +72,21 @@ export async function getAllPost(): Promise<Array<Post>> {
  * @returns {Promise<Array<Tag>>} タグのリスト
  */
 export async function getAllTag(): Promise<Array<Tag>> {
+
+    if (cache.tagList != null) {
+
+        console.log("Uses cached tags.");
+        return cache.tagList;
+    }
+
+    console.log("Tags are not cached.");
     
-    // データベースのスキーマ
     const schema = await notion.databases.retrieve({
         database_id: process.env.NOTION_DATABASE_ID as string,
     });
-
-    // タグのプロパティ
     const property = schema.properties.tag;
 
-    // 返却するタグのリスト
     const tagList: Array<Tag> = [];
-
     if (property != null && property.type == "multi_select") {
 
         for (const tag of property.multi_select.options) {
@@ -85,6 +102,7 @@ export async function getAllTag(): Promise<Array<Tag>> {
         }
     }
 
+    cache.tagList = tagList;
     return tagList;
 }
 
@@ -96,20 +114,12 @@ export async function getAllTag(): Promise<Array<Tag>> {
  */
 export async function getPostByTag(tagId: string): Promise<Array<Post> | null> {
 
-    // タグをすべて取得する
-    const tagList = await getAllTag();
-
-    // 指定されたタグが存在しないときは、null を返却する
-    if (!tagList.some((tag) => tag.id === tagId)) {
+    if (!(await getAllTag()).some((tag) => tag.id === tagId)) {
 
         return null;
     }
 
-    // 公開されている記事をすべて取得する
-    const postList = await getAllPost();
-
-    // タグが一致する記事を抽出する
-    return postList.filter((post) => post.tagList.some((tag) => tag.id === tagId));
+    return (await getAllPost()).filter((post) => post.tagList.some((tag) => tag.id === tagId));
 }
 
 /**
@@ -131,10 +141,11 @@ export async function getBody(pageId: string): Promise<PostBody | null> {
     }
     
     // ページをマークダウン形式で取得する
-    let markdown = getN2M().toMarkdownString(await getN2M().pageToMarkdown(pageId)).parent;
+    const n2m = getN2M(pageId);
+    let markdown = n2m.toMarkdownString(await n2m.pageToMarkdown(pageId)).parent;
 
     // トグルを Zenn 記法に変換する
-    // * NotionToMarkdown#setCustomTransformer ではうまくいかない...
+    // * NotionToMarkdown#setCustomTransformer ではうまくいかないので、ごり押しする
     markdown = markdown
         .replace(/<details>\s*<summary>(.*?)<\/summary>/g, ':::details $1')
         .replace(/<\/details>/g, ':::');
@@ -169,7 +180,10 @@ async function toPostFromGetPageResponse(response: GetPageResponse): Promise<Pos
 
     // 公開日時
     // @ts-expect-error Have a nice day!
-    const publishedAt: string | null = response.properties.publishedAt.date.start;
+    const publishedAtString: string | null = response.properties.publishedAt.date.start;
+    const publishedAt: Date | null = publishedAtString != null
+        ? toZonedTime(parseISO(publishedAtString), JAPAN_TIMEZONE)
+        : null;
 
     // 公開されていないときは、null を返却する
     if (publishedAt == null) {
@@ -207,17 +221,39 @@ async function toPostFromGetPageResponse(response: GetPageResponse): Promise<Pos
 
     // 更新日時
     // @ts-expect-error Have a nice day!
-    let updatedAt: string | null = response.last_edited_time;
+    const updatedAtString: string | null = response.last_edited_time;
+    let updatedAt: Date | null = updatedAtString != null
+        ? toZonedTime(parseISO(updatedAtString), JAPAN_TIMEZONE)
+        : null;
 
-    // 更新日時が公開日時より過去のときは、更新日時を指定しない
-    if (updatedAt != null && Date.parse(updatedAt) < Date.parse(publishedAt)) {
+    // 更新日が公開日より過去のときは、更新日を指定しない
+    if (
+        updatedAt != null &&
+        format(updatedAt, DATE_FORMAT) <= format(publishedAt, DATE_FORMAT)
+    ) {
 
         updatedAt = null;
     }
 
     // サムネイル
     // @ts-expect-error Have a nice day!
-    const s3ThumbnailUrl: string | null = response.properties.thumbnail.files[0]?.file.url ?? null;
+    const imageName: string | null = response.properties.thumbnail.files[0]?.name.split('.').slice(0, -1).join('.') ?? null;
+    // @ts-expect-error Have a nice day!
+    const s3Url: string | null = response.properties.thumbnail.files[0]?.file.url ?? null;
+
+    if (imageName == null || s3Url == null) {
+
+        return {
+            id: id,
+            title: title,
+            tagList: tagList,
+            publishedAt: publishedAt,
+            updatedAt: updatedAt,
+            isPublished: isPublished,
+        };
+    }
+
+    const image = await fetch(s3Url).then(response => response.arrayBuffer()).catch(() => null);
 
     return {
         id: id,
@@ -226,18 +262,19 @@ async function toPostFromGetPageResponse(response: GetPageResponse): Promise<Pos
         publishedAt: publishedAt,
         updatedAt: updatedAt,
         isPublished: isPublished,
-        thumbnail: s3ThumbnailUrl != null
-            ? (await getVercelBlobUrl(`thumbnail-${id}`, s3ThumbnailUrl) ?? s3ThumbnailUrl)
-            : null,
+        thumbnail: image != null
+        ? (await getImageUrl(`${id}/${imageName}`, image, Format.jpeg)) ?? s3Url
+        : s3Url,
     };
 }
 
 /**
  *  NotionToMarkdown インスタンスを取得する
  * 
+ *  @param {string} pageId ページ ID
  *  @returns {NotionToMarkdown} NotionToMarkdown インスタンス
  */
-function getN2M(): NotionToMarkdown {
+function getN2M(pageId: string): NotionToMarkdown {
 
     // NotionToMarkdown インスタンス
     const n2m = new NotionToMarkdown({ notionClient: notion });
@@ -299,10 +336,14 @@ function getN2M(): NotionToMarkdown {
 
         if (block.image.type === 'file') {
 
-            const id = block.id;
-            const s3Url = block.image.file.url;
+            const imageId = block.id;
 
-            text = `![${caption ?? ""}](${await getVercelBlobUrl(`body-${id}`, s3Url) ?? s3Url})`;
+            const image = await fetch(block.image.file.url).then(response => response.arrayBuffer()).catch(() => null);
+            const url = image != null
+                ? (await getImageUrl(`${pageId}/${imageId}`, image, Format.avif)) ?? block.image.file.url
+                : block.image.file.url;
+
+            text = `![${caption ?? ""}](${url})`;
         }
 
         if (caption) {
@@ -373,77 +414,4 @@ function getN2M(): NotionToMarkdown {
     });
 
     return n2m;
-}
-
-/**
- *  Vercel Blob に保存している画像の URL を取得する
- * 
- *  Vercel Blob に画像がないときは、画像をアップロードして URL を取得します。
- * 
- *  @param {string} id 画像 ID
- *  @param {string} originalImageUrl Notion から取得した画像の URL
- *  @returns {Promise<string | null>} Vercel Blob に保存している画像の URL
- */
-async function getVercelBlobUrl(id: string, originalImageUrl: string): Promise<string | null> {
-
-    const imageName = `${process.env.BLOB_IMAGE_PREFIX ?? ""}${id}.jpeg`;
-    let imageUrl: string | null = null;
-
-    try {
-
-        imageUrl = (await head(imageName)).url;
-
-        console.log(`Found on Vercel Blob: ${imageName}`);
-    } catch (error) {
-
-        console.log(
-            error instanceof BlobNotFoundError
-                ? `Not found on Vercel Blob: ${imageName}`
-                : `Error occurred while heading: ${error}`
-        )
-    }
-
-    if (imageUrl == null) {
-
-        try {
-
-            const arrayBuffer = await (await fetch(originalImageUrl)).arrayBuffer();
-            const compressedBuffer = await compressImage(Buffer.from(arrayBuffer), 0.3);
-
-            imageUrl = (await put(imageName, compressedBuffer, {
-                access: "public",
-                addRandomSuffix: false,
-            })).url;
-
-            console.log(`Uploaded to Vercel Blob: ${imageName}`);
-        } catch (error) {
-
-            console.log(`Error occurred while putting: ${error}`);
-        }
-    }
-
-    return imageUrl;
-}
-
-/**
- * 画像を圧縮する
- * 
- * @param {Buffer} inputBuffer 画像
- * @param {number} maxSizeMB 最大サイズ（MB）
- * @returns {Promise<Buffer>} 圧縮後の画像
- */
-async function compressImage(inputBuffer: Buffer, maxSizeMB: number): Promise<Buffer> {
-    
-    let outputBuffer = inputBuffer;
-    let quality = 80;
-
-    while (outputBuffer.length / 1024 / 1024 > maxSizeMB && quality > 5) {
-        outputBuffer = await sharp(inputBuffer)
-        .rotate()
-        .jpeg({ quality })
-        .toBuffer();
-        quality -= 5;
-    }
-
-    return outputBuffer;
 }

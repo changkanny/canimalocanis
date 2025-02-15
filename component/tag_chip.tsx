@@ -1,5 +1,6 @@
-import { Tag } from "@/interface/tag";
+import { Tag } from "@/lib/interface/tag";
 import styles from "./tag_chip.module.css";
+import { tagListLink } from "@/lib/helper";
 
 export default function TagChip({ tag }: { tag: Tag }) {
 
@@ -41,7 +42,7 @@ export default function TagChip({ tag }: { tag: Tag }) {
     }
 
     return (
-        <a href={`/tag/${tag.id}`} className={`${styles.tag} ${tagColorClassName} text-decoration-none`}>
+        <a href={tagListLink(tag.id, 1)} className={`${styles.tag} ${tagColorClassName} text-decoration-none`}>
             <span>{tag.name}</span>
         </a>
     );

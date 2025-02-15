@@ -1,4 +1,4 @@
-import { Post } from "@/interface/post";
+import { Post } from "@/lib/interface/post";
 import TagChip from "./tag_chip";
 import { format } from "date-fns";
 import styles from "./post_header.module.css";
@@ -24,9 +24,9 @@ export default function PostHeader(
                 </div>
             )}
             <p className="text-muted">
-                <span>{format(new Date(post.publishedAt), "yyyy/M/d")}</span>
+                <span>{format(post.publishedAt, "yyyy/M/d")}</span>
                 {post.updatedAt && (
-                    <span>（{format(new Date(post.updatedAt), "yyyy/M/d")} に更新）</span>
+                    <span>（{format(post.updatedAt, "yyyy/M/d")} に更新）</span>
                 )}
             </p>
         </div>
