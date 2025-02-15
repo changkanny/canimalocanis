@@ -1,4 +1,4 @@
-import { Post } from "@/interface/post";
+import { Post } from "@/lib/interface/post";
 import TagChip from "./tag_chip";
 import { format } from "date-fns";
 import styles from "./post_header.module.css";

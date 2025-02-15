@@ -1,5 +1,5 @@
-import { Post, PostBody } from "@/interface/post";
-import { Tag } from "@/interface/tag";
+import { Post, PostBody } from "@/lib/interface/post";
+import { Tag } from "@/lib/interface/tag";
 import { Client } from "@notionhq/client";
 import { GetPageResponse, RichTextItemResponse } from "@notionhq/client/build/src/api-endpoints";
 import { NotionToMarkdown } from "notion-to-md";
@@ -22,8 +22,6 @@ const cache: { postList: Array<Post> | null, tagList: Array<Tag> | null } = { po
 /**
  * 記事をすべて取得する
  * 
- * 公開されているもののみを取得します。
- * 
  * @returns {Promise<Array<Post>>} 記事のリスト
  */
 export async function getAllPost(): Promise<Array<Post>> {
@@ -33,6 +31,8 @@ export async function getAllPost(): Promise<Array<Post>> {
         console.log("Uses cached posts.");
         return cache.postList;
     }
+
+    console.log("Posts are not cached.");
 
     const response = await notion.databases.query({
         database_id: process.env.NOTION_DATABASE_ID as string,
@@ -78,6 +78,8 @@ export async function getAllTag(): Promise<Array<Tag>> {
         console.log("Uses cached tags.");
         return cache.tagList;
     }
+
+    console.log("Tags are not cached.");
     
     const schema = await notion.databases.retrieve({
         database_id: process.env.NOTION_DATABASE_ID as string,

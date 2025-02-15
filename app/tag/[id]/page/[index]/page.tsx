@@ -6,15 +6,17 @@ import PostList from "@/component/post_list";
 
 export const revalidate = 3600;
 
-interface TagPageProps {
-    params: Promise<{id: string;}>;
+interface TagListPageProps {
+    params: Promise<{id: string, index: string}>;
 }
 
-export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
+const index = async (params: Promise<{index: string;}>) => parseInt((await params).index, 10) || 1;
+
+export async function generateMetadata({ params }: TagListPageProps): Promise<Metadata> {
 
     const tagId = (await params).id;
     const tagName = (await getAllTag()).find((tag) => tag.id == tagId)?.name;
-    const title = `${tagName} | Canimalocanis`;
+    const title = `${tagName}（ページ ${await index(params)}） | Canimalocanis`;
 
     return {
         title: title,
@@ -42,35 +44,30 @@ export async function generateMetadata({ params }: TagPageProps): Promise<Metada
     };
 }
 
-export default async function TagPage({ params }: TagPageProps) {
+export default async function TagListPage({ params }: TagListPageProps) {
 
     const tagId = (await params).id;
-    const postList = getPostByIndex(1, await getPostByTag(tagId));
+    const postList = getPostByIndex(await index(params), await getPostByTag(tagId));
     const tagList = await getAllTag();
+
+    tagList.forEach((tag) => {
+        tag.isHighlighted = tag.id == tagId;
+    });
 
     if (!postList) {
 
         return notFound();
     }
 
-    postList.postList.forEach((post) => {
-        post.tagList.forEach((tag) => {
-            tag.isHighlighted = tag.id == tagId;
-        });
-    });
-    tagList.forEach((tag) => {
-        tag.isHighlighted = tag.id == tagId;
-    });
-
     return (
         <div>
             <main>
                 <PostList 
                     pageNation={{
-                        index: 1,
+                        index: await index(params),
                         totalPage: postList.totalPage,
-                        previousLink: null,
-                        nextLink: tagListLink(tagId, 2),
+                        previousLink: tagListLink(tagId, await index(params) - 1),
+                        nextLink: tagListLink(tagId, await index(params) + 1),
                     }}
                     postList={postList.postList} 
                     tagList={tagList} 
@@ -82,5 +79,19 @@ export default async function TagPage({ params }: TagPageProps) {
 
 export const generateStaticParams = async () => {
 
-    return (await getAllTag()).map((tag) => ({ id: tag.id }));
+    const tagList = await getAllTag();
+
+    const params = await Promise.all(tagList.map(async (tag) => {
+
+        const totalPage = getPostByIndex(1, await getPostByTag(tag.id))?.totalPage;
+
+        return totalPage
+            ? Array.from({ length: totalPage }, (_, i) => ({
+                id: tag.id,
+                index: (i + 1).toString(),
+            }))
+            : [];
+    }));
+
+    return params.flat();
 };
