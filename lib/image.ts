@@ -4,8 +4,8 @@ import { CacheType, getCache, saveCache } from "./cache";
 
 export enum Format {
 
-    jpeg = "jpeg",
-    avif = "avif",
+    Jpeg = "jpeg",
+    Avif = "avif",
 }
 
 /**
@@ -41,11 +41,11 @@ export async function getImageUrl(name: string, image: ArrayBuffer, format: Form
 async function compressImage(image: Buffer, maxSizeMB: number, format: Format): Promise<Buffer> {
   
     let output = image;
-    let quality = format === Format.avif ? 50 : 80;
+    let quality = format === Format.Avif ? 50 : 80;
 
     while (output.length / 1024 / 1024 > maxSizeMB && quality > 5) {
 
-        if (format === Format.avif) {
+        if (format === Format.Avif) {
 
             output = await sharp(image)
             .rotate()

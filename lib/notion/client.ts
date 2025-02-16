@@ -255,7 +255,7 @@ const toPostFromGetPageResponse = async (response: GetPageResponse): Promise<Pos
         updatedAt: updatedAt,
         isPublished: isPublished,
         thumbnail: image != null
-        ? (await getImageUrl(`${id}/${imageName}`, image, Format.jpeg)) ?? s3Url
+        ? (await getImageUrl(`${id}/${imageName}`, image, Format.Jpeg)) ?? s3Url
         : s3Url,
     };
 }

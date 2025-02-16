@@ -123,7 +123,7 @@ export const setImage = async (block: ImageBlockObjectResponse, pageId: string):
 
         const image = await fetch(block.image.file.url).then(response => response.arrayBuffer()).catch(() => null);
         const url = image != null
-            ? (await getImageUrl(`${pageId}/${imageId}`, image, Format.avif)) ?? block.image.file.url
+            ? (await getImageUrl(`${pageId}/${imageId}`, image, Format.Avif)) ?? block.image.file.url
             : block.image.file.url;
 
         text = `![${caption ?? ""}](${url})`;
