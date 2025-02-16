@@ -1,13 +1,8 @@
 name: Regular Deployment
 
 on:
-  push:
-    branches:
-      - main
   schedule:
-    - cron: "0 3 * * *"
-  workflow_dispatch:
-  repository_dispatch:
+    - cron: "0 18 * * *" # 3:00 AM JST
 
 jobs:
   build:
