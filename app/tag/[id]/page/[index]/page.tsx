@@ -5,6 +5,7 @@ import { getPostByIndex, tagListLink } from "@/lib/helper";
 import PostList from "@/component/post_list";
 
 export const revalidate = 3600;
+export const dynamicParams = false;
 
 interface TagListPageProps {
     params: Promise<{id: string, index: string}>;

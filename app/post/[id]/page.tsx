@@ -7,6 +7,7 @@ import './page.css';
 import { Metadata } from "next";
 
 export const revalidate = 3600;
+export const dynamicParams = false;
 
 interface PostPageProps {
     params: Promise<{id: string;}>;
