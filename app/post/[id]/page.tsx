@@ -6,7 +6,6 @@ import 'zenn-content-css';
 import './page.css';
 import { Metadata } from "next";
 
-export const revalidate = 3600;
 export const dynamicParams = false;
 
 interface PostPageProps {

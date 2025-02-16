@@ -5,7 +5,6 @@ import { Metadata } from "next";
 import PostList from "@/component/post_list";
 import { getPostByIndex, pageListLink } from "@/lib/helper";
 
-export const revalidate = 3600;
 export const dynamicParams = false;
 
 interface PostListPageProps {
