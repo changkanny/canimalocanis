@@ -1,0 +1,20 @@
+name: Regular Deployment
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+  repository_dispatch:
+
+jobs:
+  build:
+    name: build
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Call the web hook
+      run: curl -X POST ${{ secrets.DEPLOY_TRIGGER_URL }}
