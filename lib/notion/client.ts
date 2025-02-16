@@ -8,6 +8,7 @@ import { Format, getImageUrl } from "@/lib/image";
 import { format, parseISO } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { replaceTableOfContents, setBookmark, setCallout, setCode, setImage, setLazyLoading, setMention, setTableOfContents, setToggle } from "./converter";
+import { CacheType, getCache, saveCache } from "../cache";
 
 const JAPAN_TIMEZONE: string = "Asia/Tokyo";
 const DATE_FORMAT: string = "yyyy-MM-dd";
@@ -17,8 +18,6 @@ const notion = new Client({
     auth: process.env.NOTION_TOKEN,
 });
 
-const cache: { postList: Array<Post> | null, tagList: Array<Tag> | null } = { postList: null, tagList: null };
-
 /**
  * 記事をすべて取得する
  * 
@@ -26,10 +25,15 @@ const cache: { postList: Array<Post> | null, tagList: Array<Tag> | null } = { po
  */
 export async function getAllPost(): Promise<Array<Post>> {
 
-    if (cache.postList != null && !IS_DEVELOPMENT) {
-        
-        console.log("[GET ALL POST] Cache is exists. Using cache...");
-        return cache.postList;
+    if (!IS_DEVELOPMENT) {
+
+        const cache = getCache<Array<Post>>(CacheType.Post);
+
+        if (cache != null) {
+
+            console.log("[GET ALL POST] Cache is exists. Using cache...");
+            return cache;
+        }
     }
 
     console.log("[GET ALL POST] Cache is not exists. Fetching posts...");
@@ -62,7 +66,7 @@ export async function getAllPost(): Promise<Array<Post>> {
         format(post.publishedAt, DATE_FORMAT) <= format(new Date(), DATE_FORMAT)
     );
 
-    cache.postList = postList;
+    saveCache(CacheType.Post, postList);
     return postList;
 };
 
@@ -73,10 +77,15 @@ export async function getAllPost(): Promise<Array<Post>> {
  */
 export async function getAllTag(): Promise<Array<Tag>> {
 
-    if (cache.tagList != null && !IS_DEVELOPMENT) {
+    if (!IS_DEVELOPMENT) {
 
-        console.log("[GET ALL TAG] Cache is exists. Using cache...");
-        return cache.tagList;
+        const cache = getCache<Array<Tag>>(CacheType.Tag);
+
+        if (cache != null) {
+
+            console.log("[GET ALL TAG] Cache is exists. Using cache...");
+            return cache;
+        }
     }
 
     console.log("[GET ALL TAG] Cache is not exists. Fetching tags...");
@@ -102,7 +111,7 @@ export async function getAllTag(): Promise<Array<Tag>> {
         }
     }
 
-    cache.tagList = tagList;
+    saveCache(CacheType.Tag, tagList);
     return tagList;
 }
 
