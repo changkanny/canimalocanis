@@ -28,11 +28,11 @@ export async function getAllPost(): Promise<Array<Post>> {
 
     if (cache.postList != null && !IS_DEVELOPMENT) {
         
-        console.log("Uses cached posts.");
+        console.log("[GET ALL POST] Cache is exists. Using cache...");
         return cache.postList;
     }
 
-    console.log("Posts are not cached.");
+    console.log("[GET ALL POST] Cache is not exists. Fetching posts...");
 
     const response = await notion.databases.query({
         database_id: process.env.NOTION_DATABASE_ID as string,
@@ -75,11 +75,11 @@ export async function getAllTag(): Promise<Array<Tag>> {
 
     if (cache.tagList != null && !IS_DEVELOPMENT) {
 
-        console.log("Uses cached tags.");
+        console.log("[GET ALL TAG] Cache is exists. Using cache...");
         return cache.tagList;
     }
 
-    console.log("Tags are not cached.");
+    console.log("[GET ALL TAG] Cache is not exists. Fetching tags...");
     
     const schema = await notion.databases.retrieve({
         database_id: process.env.NOTION_DATABASE_ID as string,

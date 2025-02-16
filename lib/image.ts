@@ -1,5 +1,7 @@
-import { BlobNotFoundError, head, put } from "@vercel/blob";
+import { put, list, ListBlobResult, ListBlobResultBlob } from "@vercel/blob";
 import sharp from "sharp";
+
+const cache: { blobList: Array<ListBlobResultBlob> | null } = { blobList: null };
 
 export enum Format {
 
@@ -18,38 +20,12 @@ export enum Format {
 export async function getImageUrl(name: string, image: ArrayBuffer, format: Format): Promise<string | null> {
 
     const imageName = `${name}.${format}`;
-    let imageUrl: string | null = null;
-
-    try {
-
-        imageUrl = (await head(imageName)).url;
-
-        console.log(`Found on Vercel Blob: ${imageName}`);
-    } catch (error) {
-
-        console.log(
-            error instanceof BlobNotFoundError
-                ? `Not found on Vercel Blob: ${imageName}`
-                : `Error occurred while heading: ${error}`
-        )
-    }
+    let imageUrl: string | null = await get(imageName);
 
     if (imageUrl == null) {
 
-        try {
-
-            const compressedImage = await compressImage(Buffer.from(image), 1, format);
-
-            imageUrl = (await put(imageName, compressedImage, {
-                access: "public",
-                addRandomSuffix: false,
-            })).url;
-
-            console.log(`Uploaded to Vercel Blob: ${imageName}`);
-        } catch (error) {
-
-            console.log(`Error occurred while putting: ${error}`);
-        }
+        const compressedImage = await compressImage(Buffer.from(image), 1, format);
+        imageUrl = await save(imageName, compressedImage);
     }
 
     return imageUrl;
@@ -89,3 +65,74 @@ async function compressImage(image: Buffer, maxSizeMB: number, format: Format): 
 
     return output;
 }
+
+const get = async (name: string): Promise<string | null> => {
+
+    const blobList = cache.blobList ?? [];
+
+    if (blobList.length == 0) {
+
+        console.log("[GET BLOB] Cache is not exists. Fetching blob list...");
+
+        try {
+
+            let hasMore = true;
+            let cursor;
+            
+            while (hasMore) {
+
+                const result: ListBlobResult = await list({
+                    cursor: cursor,
+                });
+
+                blobList.push(...result.blobs);
+                hasMore = result.hasMore;
+                cursor = result.cursor;
+            }
+        } catch (error) {
+
+            console.error(`[GET BLOB] Error occurred while listing: ${name}`);
+            console.error(error);
+            return null;
+        }
+
+        cache.blobList = blobList;
+    } else {
+
+        console.log("[GET BLOB] Cache is exits. Using cache...");
+    }
+
+    const target = blobList.find((blob) => blob.pathname == name)?.url ?? null;
+    console.log(target != null ? `[GET BLOB] Success: ${name}` : `[GET BLOB] Not found: ${name}`);
+    return target;
+};
+
+const save = async (name: string, image: Buffer): Promise<string | null> => {
+
+    try {
+
+        const result = await put(name, image, {
+            access: "public",
+            addRandomSuffix: false,
+        });
+
+        if (cache.blobList != null) {
+
+            cache.blobList.push({
+                url: result.url,
+                downloadUrl: result.downloadUrl,
+                pathname: result.pathname,
+                size: image.length,
+                uploadedAt: new Date(),
+            });
+        }
+
+        console.log(`[SAVE BLOB] Success: ${name}`);
+        return result.url;
+    } catch (error) {
+
+        console.error(`[SAVE BLOB] Error occurred while putting: ${name}`);
+        console.error(error);
+        return null;
+    }
+};
