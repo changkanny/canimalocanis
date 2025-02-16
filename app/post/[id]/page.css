@@ -1,7 +1,13 @@
+.znc {
+
+    text-underline-offset: 4px;
+}
+
 .znc aside.message {
 
     color: var(--bs-body-color) !important;
     background-color: var(--bs-warning-bg-subtle) !important;
+    border-radius: var(--boarder-radius) !important;
 }
 
 .znc .msg-symbol {
@@ -48,4 +54,15 @@
 .znc .details-content {
 
     background-color: var(--bs-body-bg) !important;
+}
+
+.toc {
+
+    border: 1px solid #d6e3ed !important;
+    border-radius: var(--boarder-radius) !important;
+}
+
+.toc a {
+
+    color: var(--bs-body-color) !important;
 }

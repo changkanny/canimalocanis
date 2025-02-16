@@ -1,5 +1,5 @@
 import PostHeader from "@/component/post_header";
-import { getBody, getAllPost } from "@/lib/notion";
+import { getBody, getAllPost } from "@/lib/notion/client";
 import { notFound } from "next/navigation";
 import Script from "next/script";
 import 'zenn-content-css';

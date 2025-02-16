@@ -4,3 +4,8 @@ body {
     margin: 0 auto;
     padding: 0 1.5rem;
 }
+
+:root {
+    
+    --boarder-radius: 8px;
+}
