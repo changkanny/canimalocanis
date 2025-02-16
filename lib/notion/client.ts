@@ -7,7 +7,7 @@ import zennMarkdownHtml from 'zenn-markdown-html';
 import { Format, getImageUrl } from "@/lib/image";
 import { format, parseISO } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
-import { replaceTableOfContents, setBookmark, setCallout, setCode, setImage, setLazyLoading, setMention, setTableOfContents, setToggle } from "./converter";
+import { replaceTableOfContents, setBookmark, setCallout, setCode, setImage, setMention, setTableOfContents, setToggle } from "./converter";
 import { CacheType, getCache, saveCache } from "../cache";
 
 const JAPAN_TIMEZONE: string = "Asia/Tokyo";
@@ -158,7 +158,6 @@ export async function getBody(pageId: string): Promise<PostBody | null> {
         embedOrigin: "https://embed.zenn.studio", // これを指定しないと埋め込み要素が表示されないよ！
     });
     html = replaceTableOfContents(html);
-    html = setLazyLoading(html);
 
     return {
         ...post,
