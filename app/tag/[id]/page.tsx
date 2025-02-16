@@ -4,7 +4,6 @@ import { Metadata } from "next";
 import { getPostByIndex, tagListLink } from "@/lib/helper";
 import PostList from "@/component/post_list";
 
-export const revalidate = 3600;
 export const dynamicParams = false;
 
 interface TagPageProps {

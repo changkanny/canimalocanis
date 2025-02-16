@@ -1,12 +1,11 @@
 import { put, list, ListBlobResult, ListBlobResultBlob } from "@vercel/blob";
 import sharp from "sharp";
-
-const cache: { blobList: Array<ListBlobResultBlob> | null } = { blobList: null };
+import { CacheType, getCache, saveCache } from "./cache";
 
 export enum Format {
 
-    jpeg = "jpeg",
-    avif = "avif",
+    Jpeg = "jpeg",
+    Avif = "avif",
 }
 
 /**
@@ -42,11 +41,11 @@ export async function getImageUrl(name: string, image: ArrayBuffer, format: Form
 async function compressImage(image: Buffer, maxSizeMB: number, format: Format): Promise<Buffer> {
   
     let output = image;
-    let quality = format === Format.avif ? 50 : 80;
+    let quality = format === Format.Avif ? 50 : 80;
 
     while (output.length / 1024 / 1024 > maxSizeMB && quality > 5) {
 
-        if (format === Format.avif) {
+        if (format === Format.Avif) {
 
             output = await sharp(image)
             .rotate()
@@ -68,7 +67,7 @@ async function compressImage(image: Buffer, maxSizeMB: number, format: Format): 
 
 const get = async (name: string): Promise<string | null> => {
 
-    const blobList = cache.blobList ?? [];
+    const blobList = getCache<Array<ListBlobResultBlob>>(CacheType.Blob) ?? [];
 
     if (blobList.length == 0) {
 
@@ -91,12 +90,12 @@ const get = async (name: string): Promise<string | null> => {
             }
         } catch (error) {
 
-            console.error(`[GET BLOB] Error occurred while listing: ${name}`);
+            console.error(`[GET BLOB] Error: ${name}`);
             console.error(error);
             return null;
         }
 
-        cache.blobList = blobList;
+        saveCache(CacheType.Blob, blobList);
     } else {
 
         console.log("[GET BLOB] Cache is exits. Using cache...");
@@ -116,22 +115,26 @@ const save = async (name: string, image: Buffer): Promise<string | null> => {
             addRandomSuffix: false,
         });
 
-        if (cache.blobList != null) {
+        const cache = getCache<Array<ListBlobResultBlob>>(CacheType.Blob);
 
-            cache.blobList.push({
+        if (cache != null) {
+
+            cache.push({
                 url: result.url,
                 downloadUrl: result.downloadUrl,
                 pathname: result.pathname,
                 size: image.length,
                 uploadedAt: new Date(),
             });
+
+            saveCache(CacheType.Blob, cache);
         }
 
         console.log(`[SAVE BLOB] Success: ${name}`);
         return result.url;
     } catch (error) {
 
-        console.error(`[SAVE BLOB] Error occurred while putting: ${name}`);
+        console.error(`[SAVE BLOB] Error: ${name}`);
         console.error(error);
         return null;
     }

@@ -5,8 +5,6 @@ import { Metadata } from "next";
 import PostList from "@/component/post_list";
 import { pageListLink, getPostByIndex } from "@/lib/helper";
 
-export const revalidate = 3600;
-
 export function generateMetadata(): Metadata {
 
     return {
