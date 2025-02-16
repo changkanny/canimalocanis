@@ -1,3 +1,5 @@
+@import '../app/global.css';
+
 .link {
     color: var(--bs-body-color);
     text-decoration: underline;
@@ -27,7 +29,7 @@
     padding-bottom: 75%; /* 4:3 アスペクト比 */
     background-size: cover;
     background-position: center;
-    border-radius: 8px; /* 角丸 */
+    border-radius: var(--boarder-radius);
     margin-bottom: 1rem;
     transition: filter 0.5s ease;
 }

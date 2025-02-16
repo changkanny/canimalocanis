@@ -1,3 +1,5 @@
+@import '../app/global.css';
+
 .title {
     font-size: 1.7rem;
     color: var(--bs-body-color);
@@ -10,6 +12,6 @@
     padding-bottom: 75%; /* 4:3 アスペクト比 */
     background-size: cover;
     background-position: center;
-    border-radius: 8px; /* 角丸 */
+    border-radius: var(--boarder-radius);
     margin-bottom: 1rem;
 }

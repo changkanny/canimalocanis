@@ -1,4 +1,4 @@
-import { getAllPost, getAllTag } from "@/lib/notion";
+import { getAllPost, getAllTag } from "@/lib/notion/client";
 import { MetadataRoute } from "next";
 
 export const revalidate = 3600;
