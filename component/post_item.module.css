@@ -1,5 +1,3 @@
-@import '../app/global.css';
-
 .link {
     color: var(--bs-body-color);
     text-decoration: underline;
