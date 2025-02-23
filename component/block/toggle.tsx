@@ -3,7 +3,7 @@ import { JSX } from "react";
 import { RichText } from "./rich_text";
 import { Block } from "@/lib/interface/block";
 import React from "react";
-import { toElement } from "../body";
+import { toElement } from "../post_body";
 import styles from './toggle.module.css';
 
 export function Toggle( { block, children }: { block: ToggleBlockObjectResponse, children: Array<Block> } ): JSX.Element {

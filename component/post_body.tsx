@@ -18,12 +18,7 @@ import { Quote } from "./block/quote";
 import { Callout } from "./block/callout";
 import { Image } from "./block/image";
 
-interface BodyProps {
-    
-    blockList: Array<Block>;
-}
-
-export function Body({ blockList }: BodyProps): JSX.Element {
+export function PostBody({ blockList }: { blockList: Array<Block> }): JSX.Element {
 
     return (
         <div className={styles.body}>

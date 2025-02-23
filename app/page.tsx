@@ -1,4 +1,4 @@
-import { getAllPost, getAllTag, } from "@/lib/notion";
+import { getAllPost, getAllTag, } from "@/lib/notion/common";
 import { Tag } from "@/lib/interface/tag";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";

@@ -1,4 +1,4 @@
-import { getAllPost, getAllTag } from "@/lib/notion";
+import { getAllPost, getAllTag } from "@/lib/notion/common";
 import { MetadataRoute } from "next";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

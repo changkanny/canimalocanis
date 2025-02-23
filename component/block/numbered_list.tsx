@@ -2,7 +2,7 @@ import { JSX } from "react";
 import styles from './numbered_list.module.css';
 import { CustomizedNumberedListBlock } from "@/lib/interface/block";
 import React from "react";
-import { toElement } from "../body";
+import { toElement } from "../post_body";
 
 export function NumberedList( { block }: { block: CustomizedNumberedListBlock } ): JSX.Element {
 

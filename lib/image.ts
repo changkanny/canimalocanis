@@ -14,16 +14,23 @@ export enum Format {
  *  Vercel Blob に保存している画像の URL を取得する
  * 
  *  @param {string} name 名前
- *  @param {string} image 画像
+ *  @param {string} originalUrl 画像 URL
  *  @param {Format} format フォーマット
  *  @returns {Promise<string | null>} URL
  */
-export async function getImageUrl(name: string, image: ArrayBuffer, format: Format): Promise<string | null> {
+export async function getStoredImageUrl(name: string, originalUrl: string, format: Format): Promise<string | null> {
 
     const imageName = `${IS_ON_VERCEL ? "prod/" : "dev/"}${name}.${format}`;
     let imageUrl: string | null = await get(imageName);
 
     if (imageUrl == null) {
+
+        const image = await fetch(originalUrl).then(response => response.arrayBuffer()).catch(() => null);
+
+        if (image == null) {
+
+            return null;
+        }
 
         const compressedImage = await compressImage(Buffer.from(image), 1, format);
         imageUrl = await save(imageName, compressedImage);

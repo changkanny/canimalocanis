@@ -1,248 +1,20 @@
-import { Post, PostBody } from "@/lib/interface/post";
-import { Tag } from "@/lib/interface/tag";
-import { Client } from "@notionhq/client";
-import { BlockObjectResponse, GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
-import { Format, getImageUrl } from "@/lib/image";
-import { format, parseISO } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
-import { CacheType, getCache, saveCache } from "./cache";
-import { Block, CustomizedTableCellBlock } from "./interface/block";
-
-const JAPAN_TIMEZONE: string = "Asia/Tokyo";
-const DATE_FORMAT: string = "yyyy-MM-dd";
-
-const notion = new Client({
-    auth: process.env.NOTION_TOKEN,
-});
+import { BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { Format, getStoredImageUrl } from "../image";
+import { Block, CustomizedTableCellBlock } from "../interface/block";
+import { notion } from "./common";
 
 /**
- * 記事をすべて取得する
+ *  ブロックを取得する
  * 
- * @returns {Promise<Array<Post>>} 記事のリスト
- */
-export async function getAllPost(): Promise<Array<Post>> {
-
-    const cache = getCache<Array<Post>>(CacheType.Post);
-
-    if (cache != null) {
-
-        console.log("[GET ALL POST] Cache is exists. Using cache...");
-        return cache;
-    }
-
-    console.log("[GET ALL POST] Cache is not exists. Fetching posts...");
-
-    let hasMore = true;
-    let nextCursor: string | null = null;
-    const responseList: Array<GetPageResponse> = [];
-
-    while (hasMore) {
-
-        const response = await notion.databases.query({
-            database_id: process.env.NOTION_DATABASE_ID as string,
-            start_cursor: nextCursor ?? undefined,
-        });
-
-        responseList.push(...response.results.filter(
-            (result): result is GetPageResponse => 'properties' in result
-        ));
-
-        hasMore = response.has_more;
-        nextCursor = response.next_cursor;
-    }
-
-    let postList = (await Promise.all(
-        responseList.map((result) => toPostFromGetPageResponse(result))
-    )).filter((post): post is Post => post !== null);
-
-    postList = postList.filter((post) =>
-        post.isPublished &&
-        format(post.publishedAt, DATE_FORMAT) <= format(new Date(), DATE_FORMAT)
-    );
-
-    postList = postList.sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
-
-    saveCache(CacheType.Post, postList);
-    return postList;
-};
-
-/**
- * タグをすべて取得する
+ *  pageId で指定されたページのブロックを取得します。
+ *  ブロックに子ブロックがあるときは、再帰的に取得します。
+ *  通常、blockId を指定する必要はありません。
  * 
- * @returns {Promise<Array<Tag>>} タグのリスト
+ *  @param {string} pageId ページ ID
+ *  @param {string} blockId ブロック ID
+ *  @returns {Promise<Array<Block>>} ブロック
  */
-export async function getAllTag(): Promise<Array<Tag>> {
-
-    const cache = getCache<Array<Tag>>(CacheType.Tag);
-
-    if (cache != null) {
-
-        console.log("[GET ALL TAG] Cache is exists. Using cache...");
-        return cache;
-    }
-
-    console.log("[GET ALL TAG] Cache is not exists. Fetching tags...");
-    
-    const schema = await notion.databases.retrieve({
-        database_id: process.env.NOTION_DATABASE_ID as string,
-    });
-    const property = schema.properties.tag;
-
-    const tagList: Array<Tag> = [];
-    if (property != null && property.type == "multi_select") {
-
-        for (const tag of property.multi_select.options) {
-
-            tagList.push(
-                {
-                    id: tag.id,
-                    name: tag.name,
-                    color: tag.color,
-                    isHighlighted: false,
-                }
-            );
-        }
-    }
-
-    saveCache(CacheType.Tag, tagList);
-    return tagList;
-}
-
-/**
- *  タグに紐づく記事を取得する
- * 
- *  @param {string} tagId タグ ID
- *  @returns {Promise<Array<Post> | null>} 記事のリスト
- */
-export async function getPostByTag(tagId: string): Promise<Array<Post> | null> {
-
-    if (!(await getAllTag()).some((tag) => tag.id === tagId)) {
-
-        return null;
-    }
-
-    return (await getAllPost()).filter((post) => post.tagList.some((tag) => tag.id === tagId));
-}
-
-/**
- * 本文を取得する
- * 
- * @param {string} pageId ページ ID
- * @returns {Promise<string>} ページの HTML
- */
-export async function getBody(pageId: string): Promise<PostBody | null> {
-
-    const response = await notion.pages.retrieve({ page_id: pageId });
-    const post = await toPostFromGetPageResponse(response);
-
-    if (post === null) {
-
-        return null;
-    }
-
-    const blockList = await getBlockList({ pageId });
-
-    return {
-        ...post,
-        blockList: blockList,
-    };
-};
-
-const toPostFromGetPageResponse = async (response: GetPageResponse): Promise<Post | null> => {
-
-    // 公開フラグ
-    // @ts-expect-error If the property is not found, it is false.
-    const isPublished: boolean = response.properties.isPublished.checkbox ?? false;
-
-    // 公開日時
-    // @ts-expect-error If the property is not found, it is null.
-    const publishedAtString: string | null = response.properties.publishedAt.date?.start;
-    const publishedAt: Date | null = publishedAtString != null
-        ? toZonedTime(parseISO(publishedAtString), JAPAN_TIMEZONE)
-        : null;
-
-    if (publishedAt == null) {
-
-        return null;
-    }
-
-    /// ID
-    const id: string = response.id;
-
-    // タイトル
-    // @ts-expect-error If the property is not found, it is null.
-    const title: string | null = response.properties.title.title[0]?.plain_text ?? null;
-
-    if (title == null) {
-
-        return null;
-    }
-
-    // タグ
-    const tagList: Array<Tag> = [];
-    // @ts-expect-error If the property is not found, it is empty.
-    for (const tag of response.properties.tag.multi_select ?? []) {
-
-        tagList.push(
-            {
-                id: tag.id,
-                name: tag.name,
-                color: tag.color,
-                isHighlighted: false,
-            }
-        );
-    }
-
-    // 更新日時
-    // @ts-expect-error If the property is not found, it is null.
-    const updatedAtString: string | null = response.last_edited_time;
-    let updatedAt: Date | null = updatedAtString != null
-        ? toZonedTime(parseISO(updatedAtString), JAPAN_TIMEZONE)
-        : null;
-
-    // 更新日が公開日より過去のときは、更新日を指定しない
-    if (
-        updatedAt != null &&
-        format(updatedAt, DATE_FORMAT) <= format(publishedAt, DATE_FORMAT)
-    ) {
-
-        updatedAt = null;
-    }
-
-    // サムネイル
-    // @ts-expect-error If the property is not found, it is null.
-    const imageName: string | null = response.properties.thumbnail.files[0]?.name.split('.').slice(0, -1).join('.') ?? null;
-    // @ts-expect-error If the property is not found, it is null.
-    const s3Url: string | null = response.properties.thumbnail.files[0]?.file.url ?? null;
-
-    if (imageName == null || s3Url == null) {
-
-        return {
-            id: id,
-            title: title,
-            tagList: tagList,
-            publishedAt: publishedAt,
-            updatedAt: updatedAt,
-            isPublished: isPublished,
-        };
-    }
-
-    const image = await fetch(s3Url).then(response => response.arrayBuffer()).catch(() => null);
-
-    return {
-        id: id,
-        title: title,
-        tagList: tagList,
-        publishedAt: publishedAt,
-        updatedAt: updatedAt,
-        isPublished: isPublished,
-        thumbnail: image != null
-        ? (await getImageUrl(`${id}/${imageName}`, image, Format.Jpeg)) ?? s3Url
-        : s3Url,
-    };
-}
-
-const getBlockList = async ({ pageId, blockId }: { pageId: string, blockId?: string }): Promise<Array<Block>> => {
+export async function getBlockList({ pageId, blockId }: { pageId: string, blockId?: string }): Promise<Array<Block>> {
 
     let hasMore = true;
     let nextCursor: string | null = null;
@@ -503,11 +275,11 @@ const setImage = async (blockList: Array<Block>, pageId: string): Promise<Array<
         if (block.content.type === "image" && block.content.image.type === "file") {
 
             const imageId = block.content.id;
-            const image = await fetch(block.content.image.file.url).then(response => response.arrayBuffer()).catch(() => null);
+            const originalUrl = block.content.image.file.url;
 
-            block.content.image.file.url = image != null
-                ? (await getImageUrl(`${pageId}/${imageId}`, image, Format.Avif)) ?? block.content.image.file.url
-                : block.content.image.file.url;
+            block.content.image.file.url = (
+                await getStoredImageUrl(`${pageId}/${imageId}`, originalUrl, Format.Avif)
+            ) ?? originalUrl;
         }
     }
 
