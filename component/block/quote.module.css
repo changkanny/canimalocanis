@@ -1,0 +1,23 @@
+.blockquote {
+
+    display: flex;
+    align-items: center;
+    border: 3px solid var(--bs-border-color);
+    border-radius: 14px 14px 14px 14px;
+    padding: 0.7em 1em 0.7em 1em;
+    margin: 1rem 0;
+}
+
+.iconContainer {
+
+    display: flex;
+    align-self: start;
+}
+
+.icon {
+
+    width: 30px;
+    height: 30px;
+    color: var(--bs-border-color);
+    margin-right: 0.5rem;
+}

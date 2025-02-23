@@ -3,9 +3,11 @@ body {
     max-width: 780px;
     margin: 0 auto;
     padding: 0 1.5rem;
+    scroll-padding-top: 70px;
 }
 
 :root {
-    
+
+    --max-font-size: 1.7rem;
     --boarder-radius: 8px;
 }

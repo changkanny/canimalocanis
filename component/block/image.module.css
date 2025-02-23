@@ -1,0 +1,18 @@
+.container {
+
+    margin: 1rem 0;
+}
+
+.image {
+
+    border-radius: 14px;
+    max-width: 100%;
+}
+
+.caption {
+
+    color: var(--bs-tertiary-color);
+    font-style: italic;
+    text-align: center;
+    line-height: 1.5;
+}

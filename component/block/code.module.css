@@ -1,0 +1,23 @@
+.container {
+
+    margin: 1rem 0;
+}
+
+.code {
+
+    overflow-y: hidden;
+    overflow-x: auto;
+}
+
+.code pre {
+
+    padding: 1.5rem 1.5rem;
+}
+
+.caption {
+
+    font-size: 0.825rem;
+    font-family: var(--bs-font-monospace);
+    padding: 0.5rem 1.5rem;
+    background-color: #282828;
+}

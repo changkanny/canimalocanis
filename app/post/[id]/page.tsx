@@ -1,10 +1,9 @@
 import PostHeader from "@/component/post_header";
-import { getBody, getAllPost } from "@/lib/notion/client";
+import { getBody, getAllPost } from "@/lib/notion";
 import { notFound } from "next/navigation";
-import Script from "next/script";
-import 'zenn-content-css';
 import './page.css';
 import { Metadata } from "next";
+import { Body } from "@/component/body";
 
 export const dynamicParams = false;
 
@@ -57,12 +56,11 @@ export default async function PostPage({ params }: PostPageProps) {
 
     return (
         <div>
-            <Script src="https://embed.zenn.studio/js/listen-embed-event.js" strategy="beforeInteractive" />
             <main>
                 <div>
                     <PostHeader post={post} />
                 </div>
-                <div className="znc" dangerouslySetInnerHTML={{ __html: post.body }} />
+                <Body blockList={post.blockList} />
             </main>
         </div>
     );
