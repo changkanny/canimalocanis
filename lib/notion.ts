@@ -51,16 +51,16 @@ export async function getAllPost(): Promise<Array<Post>> {
         nextCursor = response.next_cursor;
     }
 
-    const postList = (await Promise.all(
+    let postList = (await Promise.all(
         responseList.map((result) => toPostFromGetPageResponse(result))
     )).filter((post): post is Post => post !== null);
 
-    postList.filter((post) =>
+    postList = postList.filter((post) =>
         post.isPublished &&
         format(post.publishedAt, DATE_FORMAT) <= format(new Date(), DATE_FORMAT)
     );
 
-    postList.sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
+    postList = postList.sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
 
     saveCache(CacheType.Post, postList);
     return postList;
