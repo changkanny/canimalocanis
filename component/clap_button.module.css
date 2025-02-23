@@ -5,15 +5,15 @@
     margin-top: 20px;
     flex-direction: column;
     align-items: center;
-    padding: 5rem 0;
+    padding: 3rem 0;
 }
 
 .button {
     
     background-color: transparent;
     border: 3px solid var(--bs-border-color);
-    border-radius: 50px;
-    padding: 20px 20px;
+    border-radius: 100px;
+    padding: 30px 30px;
     cursor: pointer;
     transition: border 0.3s ease, background-color 0.3s ease;
 }
