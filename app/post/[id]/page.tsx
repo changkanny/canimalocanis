@@ -3,7 +3,7 @@ import { getBody, getAllPost } from "@/lib/notion";
 import { notFound } from "next/navigation";
 import './page.css';
 import { Metadata } from "next";
-import { Body } from "@/component/body";
+import { PostBody } from "@/component/post_body";
 
 export const dynamicParams = false;
 
@@ -57,10 +57,8 @@ export default async function PostPage({ params }: PostPageProps) {
     return (
         <div>
             <main>
-                <div>
-                    <PostHeader post={post} />
-                </div>
-                <Body blockList={post.blockList} />
+                <PostHeader post={post} />
+                <PostBody blockList={post.blockList} />
             </main>
         </div>
     );

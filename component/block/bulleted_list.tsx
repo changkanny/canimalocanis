@@ -2,7 +2,7 @@ import { JSX } from "react";
 import styles from './bulleted_list.module.css';
 import { CustomizedBulletedListBlock } from "@/lib/interface/block";
 import React from "react";
-import { toElement } from "../body";
+import { toElement } from "../post_body";
 
 export function BulletedList( { block }: { block: CustomizedBulletedListBlock } ): JSX.Element {
 
