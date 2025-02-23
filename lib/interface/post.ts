@@ -10,6 +10,7 @@ export interface Post {
     publishedAt: Date,
     updatedAt?: Date | null,
     thumbnail?: string | null,
+    clapCount: number,
 }
 
 export interface PostBody extends Post {

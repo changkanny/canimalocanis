@@ -1,9 +1,10 @@
 import PostHeader from "@/component/post_header";
-import { getBody, getAllPost } from "@/lib/notion";
+import { getBody, getAllPost } from "@/lib/notion/common";
 import { notFound } from "next/navigation";
 import './page.css';
 import { Metadata } from "next";
 import { PostBody } from "@/component/post_body";
+import { ClapButton } from "@/component/clap_button";
 
 export const dynamicParams = false;
 
@@ -59,6 +60,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <main>
                 <PostHeader post={post} />
                 <PostBody blockList={post.blockList} />
+                <ClapButton pageId={post.id} />
             </main>
         </div>
     );
