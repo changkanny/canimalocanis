@@ -1,0 +1,73 @@
+.gray {
+    color: rgb(148, 148, 148);
+}
+.brown {
+    color: rgb(186, 133, 111)
+}
+.orange {
+    color: rgb(199, 125, 72)
+}
+.yellow {
+    color: rgb(202, 152, 72);
+}
+.green {
+    color: rgb(82, 158, 114);
+}
+.blue {
+    color: rgb(55, 124, 211)
+}
+.purple {
+    color: rgb(145, 96, 194)
+}
+.pink {
+    color: rgb(193, 83, 139)
+}
+.red {
+    color: rgb(223, 84, 82)
+}
+
+.bgGray {
+    background-color: rgb(47, 47, 47);
+}
+.bgBrown {
+    background-color: rgb(74, 50, 40)
+}
+.bgOrange {
+    background-color: rgb(92, 59, 35)
+}
+.bgYellow {
+    background-color: rgb(86, 67, 40);
+}
+.bgGreen {
+    background-color: rgb(36, 61, 48);
+}
+.bgBlue {
+    background-color: rgb(20, 58, 78)
+}
+.bgPurple {
+    background-color: rgb(60, 45, 73)
+}
+.bgPink {
+    background-color: rgb(78, 44, 60)
+}
+.bgRed {
+    background-color: rgb(82, 46, 42)
+}
+
+.code {
+
+    padding: .2em .4em;
+    color: #f97583;
+    background-color: #1f1f1f;
+    border-radius: 4px;
+}
+
+.link {
+
+    transition: color 0.5s ease;
+}
+
+.link:hover {
+
+    color: var(--bs-border-color);
+}

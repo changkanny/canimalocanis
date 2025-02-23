@@ -1,0 +1,12 @@
+.li {
+
+    list-style: disc;
+    margin: 0.5rem 0;
+    line-height: 1.5;
+}
+
+.li::marker {
+
+    color: #65717b;
+    font-size: 1.2em;
+}

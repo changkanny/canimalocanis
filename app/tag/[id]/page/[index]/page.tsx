@@ -1,4 +1,4 @@
-import { getAllTag, getPostByTag } from "@/lib/notion/client";
+import { getAllTag, getPostByTag } from "@/lib/notion";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getPostByIndex, tagListLink } from "@/lib/helper";

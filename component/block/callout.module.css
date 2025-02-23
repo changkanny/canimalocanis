@@ -1,0 +1,43 @@
+.callout {
+
+    display: flex;
+    align-items: center;
+    border-radius: 14px 14px 14px 14px;
+    padding: 0.7em 1em 0.7em 1em;
+    margin: 1rem 0;
+}
+
+.information {
+
+    background-color: var(--bs-success-bg-subtle);
+    border: 3px solid var(--bs-success-bg-subtle);
+}
+
+.warning {
+
+    background-color: var(--bs-warning-bg-subtle);
+    border: 3px solid var(--bs-warning-bg-subtle);
+}
+
+.iconContainer {
+
+    display: flex;
+    align-self: start;
+}
+
+.icon {
+
+    width: 30px;
+    height: 30px;
+    margin-right: 0.5rem;
+}
+
+.information .icon {
+
+    color: var(--bs-success-border-subtle);
+}
+
+.warning .icon {
+
+    color: var(--bs-warning-border-subtle);
+}

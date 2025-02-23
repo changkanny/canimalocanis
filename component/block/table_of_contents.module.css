@@ -1,0 +1,47 @@
+.tableOfContents {
+
+    border: 3px solid var(--bs-border-color);
+    border-radius: 14px 14px 14px 14px;
+    margin: 2em 0;
+}
+
+.title {
+
+    padding: 0.7em 1em 0.7em 1em;
+    background-color: var(--bs-border-color);
+    border-radius: 10px 10px 0 0;
+    font-weight: bold;
+}
+
+.content {
+
+    padding: 0.7em 1em 0.7em 1em;
+    line-height: 1.9;
+}
+
+.item {
+
+    padding: 0.4em 0;
+}
+
+.content a {
+
+    color: var(--bs-body-color);
+    text-decoration-color: var(--bs-border-color);
+    transition: color 0.5s ease;
+}
+
+.content a:hover {
+
+    color: var(--bs-border-color);
+}
+
+.h2 {
+
+    padding-left: 1.5em;
+}
+
+.h3 {
+
+    padding-left: 3em;
+}

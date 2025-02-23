@@ -1,0 +1,12 @@
+.h1 {
+
+    padding: 0.5rem;
+    margin: 3rem 0.4rem 1.5rem 0.4rem;
+    outline: 3px solid var(--bs-border-color);
+    outline-offset: 0.3rem;
+    border-radius: 14px;
+    background-image: repeating-linear-gradient(45deg, var(--bs-border-color) 0 5px, transparent 5px 8px);
+    font-size: 1.5rem;
+    font-weight: bold;
+    line-height: 1.5;
+}

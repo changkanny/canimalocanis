@@ -1,0 +1,31 @@
+.details {
+
+    margin: 1rem 0;
+}
+
+.summary {
+
+    cursor: pointer;
+    outline: none;
+    padding: 0.7em 1em 0.7em 1em;
+    border: 3px solid var(--bs-border-color);
+    border-radius: 14px 14px 14px 14px;
+}
+
+.summary::marker {
+
+    color: #65717b;
+}
+
+.details[open]>.summary {
+
+    border-radius: 14px 14px 0 0;
+    border-bottom: none;
+}
+
+.detailsContent {
+
+    padding: 0.5em 0.9em;
+    border: 3px solid var(--bs-border-color);
+    border-radius: 0 0 14px 14px;
+}

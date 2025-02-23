@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 const CACHE_DIR = path.join(process.cwd(), ".next/cache/content");
+const IS_DEVELOPMENT: boolean = process.env.NODE_ENV === 'development';
 
 export enum CacheType {
 
@@ -11,6 +12,11 @@ export enum CacheType {
 }
 
 export function getCache<T>(type: CacheType): T | null {
+
+    if (IS_DEVELOPMENT) {
+
+        return null;
+    }
 
     try {
 
@@ -32,6 +38,11 @@ export function getCache<T>(type: CacheType): T | null {
 };
 
 export function saveCache<T>(type: CacheType, data: T): void {
+
+    if (IS_DEVELOPMENT) {
+
+        return;
+    }
 
     try {
 
