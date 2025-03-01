@@ -34,7 +34,7 @@ async function generateFeed() {
             id: `${HOST}${postLink(post.id)}`,
             link: `${HOST}${postLink(post.id)}`,
             date: new Date(post.publishedAt),
-            image: post.thumbnail ?? DEFAULT_THUMBNAIL,
+            image: post.thumbnail?.url ?? DEFAULT_THUMBNAIL,
         });
     });
 

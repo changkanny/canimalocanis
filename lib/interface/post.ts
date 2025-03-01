@@ -9,8 +9,14 @@ export interface Post {
     isPublished: boolean,
     publishedAt: Date,
     updatedAt?: Date | null,
-    thumbnail?: string | null,
+    thumbnail?: Thumbnail | null,
     clapCount: number,
+}
+
+export interface Thumbnail {
+
+    name: string,
+    url: string,
 }
 
 export interface PostBody extends Post {

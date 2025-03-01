@@ -61,7 +61,7 @@ const RichTextElement = ({ id, block }: { id: string, block: RichTextItemRespons
 
     if (block.type === "mention") {
 
-        // @ts-expect-error link_mention is not defined in Notion Client.
+        // @ts-expect-error link_mention is not defined in the Notion library.
         const title = block.mention.link_mention?.title;
         const link = block.href;
 

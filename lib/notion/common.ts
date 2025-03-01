@@ -1,4 +1,4 @@
-import { Post, PostBody } from "@/lib/interface/post";
+import { Post, PostBody, Thumbnail } from "@/lib/interface/post";
 import { Tag } from "@/lib/interface/tag";
 import { Client } from "@notionhq/client";
 import { GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
@@ -59,9 +59,7 @@ export async function getAllPost(): Promise<Array<Post>> {
         post.isPublished &&
         format(post.publishedAt, DATE_FORMAT) <= format(new Date(), DATE_FORMAT)
     );
-
     postList = postList.sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
-
     postList = await Promise.all(postList.map((post) => setThumbnail(post)));
 
     saveCache(CacheType.Post, postList);
@@ -169,10 +167,10 @@ export async function getBody(pageId: string): Promise<PostBody | null> {
 };
 
 /**
- *  ぱちぱち数をインクリメントする
+ *  拍手をインクリメントする
  * 
  *  @param {string} pageId ページ ID
- *  @returns {Promise<number | null>} 更新後のぱちぱち数
+ *  @returns {Promise<number | null>} 更新後の拍手
  */
 export async function incrementClapCount( { pageId }: { pageId: string } ): Promise<number | null> {
 
@@ -197,13 +195,52 @@ export async function incrementClapCount( { pageId }: { pageId: string } ): Prom
 
 const toPost = (response: GetPageResponse): Post | null => {
 
+    if ("properties" in response == false) {
+
+        throw new Error("Properties are not found in response.");
+    }
+
+    const properties = response.properties;
+
+    if (
+        (
+            "isPublished" in properties == false
+            || "checkbox" in properties.isPublished == false
+        )
+        || (
+            "publishedAt" in properties == false
+            || "date" in properties.publishedAt == false
+        )
+        || (
+            "title" in properties == false
+            || "title" in properties.title == false
+        )
+        || (
+            "tag" in properties == false
+            || "multi_select" in properties.tag == false
+        )
+        || (
+            "updatedAt" in properties == false
+            || "date" in properties.updatedAt == false
+        )
+        || (
+            "thumbnail" in properties == false
+            || "files" in properties.thumbnail == false
+        )
+        || (
+            "clap" in properties == false
+            || "number" in properties.clap == false
+        )
+    ) {
+
+        throw new Error("Necessary properties are not found or set to an invalid type in the database.");
+    }
+
     // 公開フラグ
-    // @ts-expect-error If the property is not found, it is false.
-    const isPublished: boolean = response.properties.isPublished.checkbox ?? false;
+    const isPublished: boolean = properties.isPublished.checkbox ?? false;
 
     // 公開日時
-    // @ts-expect-error If the property is not found, it is null.
-    const publishedAtString: string | null = response.properties.publishedAt.date?.start;
+    const publishedAtString: string | undefined = properties.publishedAt.date?.start;
     const publishedAt: Date | null = publishedAtString != null
         ? toZonedTime(parseISO(publishedAtString), JAPAN_TIMEZONE)
         : null;
@@ -217,8 +254,7 @@ const toPost = (response: GetPageResponse): Post | null => {
     const id: string = response.id;
 
     // タイトル
-    // @ts-expect-error If the property is not found, it is null.
-    const title: string | null = response.properties.title.title[0]?.plain_text ?? null;
+    const title: string | null = properties.title.title[0]?.plain_text ?? null;
 
     if (title == null) {
 
@@ -227,8 +263,7 @@ const toPost = (response: GetPageResponse): Post | null => {
 
     // タグ
     const tagList: Array<Tag> = [];
-    // @ts-expect-error If the property is not found, it is empty.
-    for (const tag of response.properties.tag.multi_select ?? []) {
+    for (const tag of properties.tag.multi_select ?? []) {
 
         tagList.push(
             {
@@ -241,13 +276,11 @@ const toPost = (response: GetPageResponse): Post | null => {
     }
 
     // 更新日時
-    // @ts-expect-error If the property is not found, it is null.
-    const updatedAtString: string | null = response.last_edited_time;
+    const updatedAtString: string | undefined = properties.updatedAt.date?.start;
     let updatedAt: Date | null = updatedAtString != null
         ? toZonedTime(parseISO(updatedAtString), JAPAN_TIMEZONE)
         : null;
 
-    // 更新日が公開日より過去のときは、更新日を指定しない
     if (
         updatedAt != null &&
         format(updatedAt, DATE_FORMAT) <= format(publishedAt, DATE_FORMAT)
@@ -257,12 +290,17 @@ const toPost = (response: GetPageResponse): Post | null => {
     }
 
     // サムネイル
-    // @ts-expect-error If the property is not found, it is null.
-    const thumbnail: string | null = response.properties.thumbnail.files[0]?.file.url ?? null;
+    const thumbnail: Thumbnail | null = 
+        properties.thumbnail.files.length > 0 && "file" in properties.thumbnail.files[0]
+        ? {
+            name: properties.thumbnail.files[0].name,
+            url: properties.thumbnail.files[0].file.url,
+        }
+        : null;
+
 
     // 拍手
-    // @ts-expect-error If the property is not found, it is 0.
-    const clapCount: number = response.properties.clap.number ?? 0;
+    const clapCount: number = properties.clap.number ?? 0;
 
     return {
         id: id,
@@ -278,24 +316,18 @@ const toPost = (response: GetPageResponse): Post | null => {
 
 const setThumbnail = async (post: Post): Promise<Post> => {
 
-    const extractFileName = (url: string): string => {
-
-        const match = url.match(/\/([^\/?#]+)\.[^\/?#]+(?:[?#]|$)/);
-        return match ? match[1] : '';
-    };
-
-    const originalUrl = post.thumbnail;
-
-    if (originalUrl == null) {
+    if (post.thumbnail == null) {
 
         return post;
     }
 
-    const imageName = extractFileName(originalUrl);
-    const storedUrl = await getStoredImageUrl(`${post.id}/${imageName}`, originalUrl, Format.Jpeg);
+    const storedUrl = await getStoredImageUrl(`${post.id}/${post.thumbnail.name}`, post.thumbnail.url, Format.Jpeg);
 
     return {
         ...post,
-        thumbnail: storedUrl ?? originalUrl,
+        thumbnail: {
+            name: post.thumbnail.name,
+            url: storedUrl ?? post.thumbnail.url,
+        }
     };
 };
