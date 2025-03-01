@@ -293,7 +293,7 @@ const toPost = (response: GetPageResponse): Post | null => {
     const thumbnail: Thumbnail | null = 
         properties.thumbnail.files.length > 0 && "file" in properties.thumbnail.files[0]
         ? {
-            name: properties.thumbnail.files[0].name,
+            name: properties.thumbnail.files[0].name.replace(/\.[^/.]+$/, ""),
             url: properties.thumbnail.files[0].file.url,
         }
         : null;

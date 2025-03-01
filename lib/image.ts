@@ -2,8 +2,6 @@ import { put, list, ListBlobResult, ListBlobResultBlob } from "@vercel/blob";
 import sharp from "sharp";
 import { CacheType, getCache, saveCache } from "./cache";
 
-const IS_ON_VERCEL = process.env.VERCEL === "1";
-
 export enum Format {
 
     Jpeg = "jpeg",
@@ -20,7 +18,7 @@ export enum Format {
  */
 export async function getStoredImageUrl(name: string, originalUrl: string, format: Format): Promise<string | null> {
 
-    const imageName = `${IS_ON_VERCEL ? "prod/" : "dev/"}${name}.${format}`;
+    const imageName = `${process.env.BLOB_DIRECTORY_NAME}/${name}.${format}`;
     let imageUrl: string | null = await get(imageName);
 
     if (imageUrl == null) {
