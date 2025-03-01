@@ -3,6 +3,38 @@ import { getBodyBySlug } from "@/lib/notion/common";
 import { notFound } from "next/navigation";
 import styles from './page.module.css';
 import { format } from "date-fns";
+import { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+
+    const post = await getBodyBySlug({slug: "privacy-policy"});
+    const title = `${post?.title} | Canimalocanis`;
+
+    return {
+        title: title,
+        openGraph: {
+            title: title,
+            siteName: 'Canimalocanis',
+            type: 'website',
+            locale: 'ja_JP',
+            images: {
+                url: `${process.env.HOST}/og.png`,
+                width: 1200,
+                height: 630,
+            },
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: title,
+            site: 'Canimalocanis',
+            images: {
+                url: `${process.env.HOST}/og.png`,
+                width: 1200,
+                height: 630,
+            },
+        },
+    };
+}
 
 export default async function PrivacyPolicyPage() {
 
