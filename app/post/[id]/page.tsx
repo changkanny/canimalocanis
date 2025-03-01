@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     const postId = (await params).id;
     const post = await getBody(postId);
     const title = `${post?.title} | Canimalocanis`;
-    const thumbnail = post?.thumbnail || `${process.env.HOST}/default-og.png`;
+    const thumbnail = post?.thumbnail?.url || `${process.env.HOST}/default-og.png`;
 
     return {
         title: title,

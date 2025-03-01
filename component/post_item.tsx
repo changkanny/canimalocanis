@@ -13,7 +13,7 @@ export default function PostItem(
             <a href={`${postLink(post.id)}`} className={styles.link}>
                 <div
                     className={styles.thumbnail}
-                    style={{ backgroundImage: `url(${post.thumbnail ?? "/default.png"})` }}
+                    style={{ backgroundImage: `url(${post.thumbnail?.url ?? "/default.png"})` }}
                 ></div>
                 <div className="mb-1">
                     <span className={styles.title}>
