@@ -1,4 +1,4 @@
-import { getAllPost, getAllTag, } from "@/lib/notion/common";
+import { getAllTag, getPublishedPost, } from "@/lib/notion/common";
 import { Tag } from "@/lib/interface/tag";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
@@ -35,7 +35,7 @@ export function generateMetadata(): Metadata {
 
 export default async function HomePage() {
 
-    const postList = getPostByIndex(1, await getAllPost());
+    const postList = getPostByIndex(1, await getPublishedPost());
     const tagList: Array<Tag> = await getAllTag();
 
     if (!postList) {

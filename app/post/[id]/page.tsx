@@ -1,5 +1,5 @@
 import PostHeader from "@/component/post_header";
-import { getBody, getAllPost } from "@/lib/notion/common";
+import { getBodyById, getPublishedPost } from "@/lib/notion/common";
 import { notFound } from "next/navigation";
 import './page.css';
 import { Metadata } from "next";
@@ -15,7 +15,7 @@ interface PostPageProps {
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
 
     const postId = (await params).id;
-    const post = await getBody(postId);
+    const post = await getBodyById({pageId: postId});
     const title = `${post?.title} | Canimalocanis`;
     const thumbnail = post?.thumbnail?.url || `${process.env.HOST}/default-og.png`;
 
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 export default async function PostPage({ params }: PostPageProps) {
 
     const postId = (await params).id;
-    const post = await getBody(postId);
+    const post = await getBodyById({pageId: postId});
 
     if (post == null) {
     
@@ -68,7 +68,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
 export const generateStaticParams = async () => {
 
-    return (await getAllPost()).map((post) => ({
+    return (await getPublishedPost()).map((post) => ({
         id: post.id,
     }));
 };

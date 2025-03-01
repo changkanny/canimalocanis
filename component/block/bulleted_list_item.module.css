@@ -1,8 +1,8 @@
 .li {
 
     list-style: disc;
-    margin: 0.5rem 0;
-    line-height: 1.5;
+    margin-bottom: 1.0rem;
+    line-height: 1.9;
 }
 
 .li::marker {

@@ -1,5 +1,5 @@
 import { postLink } from "@/lib/helper";
-import { getAllPost } from "@/lib/notion/common";
+import { getPublishedPost } from "@/lib/notion/common";
 import { Feed } from "feed";
 import fs from "fs";
 import path from "path";
@@ -13,7 +13,7 @@ const FAVICON: string = `${HOST}/favicon.ico`;
 
 async function generateFeed() {
 
-    const postList = await getAllPost();
+    const postList = await getPublishedPost();
     const latestPostDate = postList.length > 0 ? new Date(postList[0].publishedAt) : undefined;
 
     const feed = new Feed({

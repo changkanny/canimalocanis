@@ -1,4 +1,4 @@
-import { getAllPost, getAllTag, } from "@/lib/notion/common";
+import { getAllTag, getPublishedPost, } from "@/lib/notion/common";
 import { Tag } from "@/lib/interface/tag";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: PostListPageProps): Promise<M
 
 export default async function PostListPage({ params }: PostListPageProps) {
 
-    const postList = getPostByIndex(await index(params), await getAllPost());
+    const postList = getPostByIndex(await index(params), await getPublishedPost());
     const tagList: Array<Tag> = await getAllTag();
 
     if (!postList) {
@@ -73,7 +73,7 @@ export default async function PostListPage({ params }: PostListPageProps) {
 
 export const generateStaticParams = async () => {
 
-    const totalPage = getPostByIndex(1, await getAllPost())?.totalPage ?? 1;
+    const totalPage = getPostByIndex(1, await getPublishedPost())?.totalPage ?? 1;
 
     return Array.from({ length: totalPage }, (_, i) => ({ index: (i + 1).toString() }));
 };

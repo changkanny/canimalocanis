@@ -1,9 +1,9 @@
-import { getAllPost, getAllTag } from "@/lib/notion/common";
+import { getAllTag, getPublishedPost } from "@/lib/notion/common";
 import { MetadataRoute } from "next";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
-  const postList = await getAllPost();
+  const postList = await getPublishedPost();
   const tagList = await getAllTag();
 
   return [
