@@ -31,7 +31,7 @@ async function generateFeed() {
     postList.forEach((post) => {
         feed.addItem({
             title: post.title,
-            id: post.id,
+            id: `${HOST}${postLink(post.id)}`,
             link: `${HOST}${postLink(post.id)}`,
             date: new Date(post.publishedAt),
             image: post.thumbnail ?? DEFAULT_THUMBNAIL,
