@@ -1,8 +1,11 @@
+import styles from './footer.module.css';
+
 export default function Footer() {
 
     return (
-        <footer className="bg-dark text-white text-center p-3">
-            <p className="mb-0">© Canimalocanis</p>
+        <footer className={styles.footer}>
+            <a href="/privacy-policy">プライバシーポリシー／免責事項</a>
+            <p>© Canimalocanis</p>
         </footer>
     );
 }

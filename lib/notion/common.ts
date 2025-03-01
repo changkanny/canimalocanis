@@ -15,11 +15,6 @@ export const notion = new Client({
     auth: process.env.NOTION_TOKEN,
 });
 
-/**
- * 記事をすべて取得する
- * 
- * @returns {Promise<Array<Post>>} 記事のリスト
- */
 export async function getAllPost(): Promise<Array<Post>> {
 
     const cache = getCache<Array<Post>>(CacheType.Post);
@@ -55,10 +50,6 @@ export async function getAllPost(): Promise<Array<Post>> {
         responseList.map((result) => toPost(result))
     )).filter((post): post is Post => post !== null);
 
-    postList = postList.filter((post) =>
-        post.isPublished &&
-        format(post.publishedAt, DATE_FORMAT) <= format(new Date(), DATE_FORMAT)
-    );
     postList = postList.sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
     postList = await Promise.all(postList.map((post) => setThumbnail(post)));
 
@@ -66,11 +57,14 @@ export async function getAllPost(): Promise<Array<Post>> {
     return postList;
 };
 
-/**
- * タグをすべて取得する
- * 
- * @returns {Promise<Array<Tag>>} タグのリスト
- */
+export async function getPublishedPost(): Promise<Array<Post>> {
+
+    return (await getAllPost()).filter((post) => 
+        post.isPublished &&
+        format(post.publishedAt, DATE_FORMAT) <= format(new Date(), DATE_FORMAT)
+    );
+}
+
 export async function getAllTag(): Promise<Array<Tag>> {
 
     const cache = getCache<Array<Tag>>(CacheType.Tag);
@@ -108,12 +102,6 @@ export async function getAllTag(): Promise<Array<Tag>> {
     return tagList;
 }
 
-/**
- *  タグに紐づく記事を取得する
- * 
- *  @param {string} tagId タグ ID
- *  @returns {Promise<Array<Post> | null>} 記事のリスト
- */
 export async function getPostByTag(tagId: string): Promise<Array<Post> | null> {
 
     if (!(await getAllTag()).some((tag) => tag.id === tagId)) {
@@ -121,39 +109,14 @@ export async function getPostByTag(tagId: string): Promise<Array<Post> | null> {
         return null;
     }
 
-    return (await getAllPost()).filter((post) => post.tagList.some((tag) => tag.id === tagId));
+    return (await getPublishedPost()).filter((post) => post.tagList.some((tag) => tag.id === tagId));
 }
 
-/**
- *  記事を取得する
- * 
- *  @param {string} pageId ページ ID
- *  @returns {Promise<Post | null>} 記事
- */
-export async function getPostById( { pageId }: { pageId: string } ): Promise<Post | null> {
+export async function getBodyById( { pageId }: { pageId: string }): Promise<PostBody | null> {
 
-    const response = await notion.pages.retrieve({ page_id: pageId });
-    const post = toPost(response);
+    const post = await getAllPost().then((postList) => postList.find((post) => post.id === pageId));
 
     if (post == null) {
-
-        return null;
-    }
-
-    return await setThumbnail(post);
-}
-
-/**
- * 本文を取得する
- * 
- * @param {string} pageId ページ ID
- * @returns {Promise<PostBody | null>} 本文
- */
-export async function getBody(pageId: string): Promise<PostBody | null> {
-
-    const post = await getPostById({ pageId });
-
-    if (post === null) {
 
         return null;
     }
@@ -166,31 +129,36 @@ export async function getBody(pageId: string): Promise<PostBody | null> {
     };
 };
 
-/**
- *  拍手をインクリメントする
- * 
- *  @param {string} pageId ページ ID
- *  @returns {Promise<number | null>} 更新後の拍手
- */
-export async function incrementClapCount( { pageId }: { pageId: string } ): Promise<number | null> {
+export async function getBodyBySlug( { slug }: { slug: string } ): Promise<PostBody | null> {
 
-    const post = await getPostById({ pageId });
+    const post = await getAllPost().then((postList) => postList.find((post) => post.slug === slug));
 
-    if (!post) {
+    if (post == null) {
 
         return null;
     }
+
+    return await getBodyById({ pageId: post.id });
+}
+
+export async function getClap( { pageId }: { pageId: string } ): Promise<number> {
+
+    const response = await notion.pages.retrieve({ page_id: pageId });
+    return toPost(response)?.clap ?? 0;
+}
+
+export async function incrementClap( { pageId }: { pageId: string } ): Promise<number> {
 
     const response = await notion.pages.update({
         page_id: pageId,
         properties: {
             clap: {
-                number: (post.clapCount ?? 0) + 1,
+                number: (await getClap({ pageId })) + 1,
             }
         }
     });
 
-    return toPost(response)?.clapCount ?? null;
+    return toPost(response)?.clap ?? 0;
 }
 
 const toPost = (response: GetPageResponse): Post | null => {
@@ -230,6 +198,10 @@ const toPost = (response: GetPageResponse): Post | null => {
         || (
             "clap" in properties == false
             || "number" in properties.clap == false
+        )
+        || (
+            "slug" in properties == false
+            || "rich_text" in properties.slug == false
         )
     ) {
 
@@ -302,6 +274,9 @@ const toPost = (response: GetPageResponse): Post | null => {
     // 拍手
     const clapCount: number = properties.clap.number ?? 0;
 
+    // スラグ
+    const slug: string | null = properties.slug.rich_text[0]?.plain_text ?? null;
+
     return {
         id: id,
         title: title,
@@ -309,8 +284,9 @@ const toPost = (response: GetPageResponse): Post | null => {
         publishedAt: publishedAt,
         updatedAt: updatedAt,
         isPublished: isPublished,
-        clapCount: clapCount,
+        clap: clapCount,
         thumbnail: thumbnail,
+        slug: slug,
     };
 }
 

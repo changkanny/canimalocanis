@@ -1,0 +1,21 @@
+.footer {
+
+    color: var(--bs-tertiary-color);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.footer a {
+
+    color: var(--bs-tertiary-color);
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
+    display: inline-block;
+    margin-bottom: 0.3rem;
+}
+
+.footer p {
+
+    margin: 0;
+}

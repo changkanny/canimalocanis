@@ -1,4 +1,5 @@
 import { Geologica } from "next/font/google";
+import styles from "./header.module.css";
 
 const font = Geologica({
   subsets: ["latin"],
@@ -9,8 +10,8 @@ export default function Header() {
 
   return (
     <header className="navbar navbar-expand-lg">
-      <p className={`navbar-brand fs-1 fw-bold ${font.className}`}>
-        <a href="/" className="text-decoration-none text-white">Canimalocanis</a>
+      <p className={`navbar-brand ${font.className}`}>
+        <a href="/" className={styles.title}>Canimalocanis</a>
       </p>
     </header>
   );

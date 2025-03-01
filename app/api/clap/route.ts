@@ -1,4 +1,4 @@
-import { getPostById, incrementClapCount } from '@/lib/notion/common';
+import { getClap, incrementClap } from '@/lib/notion/common';
 import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest) {
@@ -10,14 +10,7 @@ export async function GET(req: NextRequest) {
         return new Response("Page id is required.", { status: 400 });
     }
 
-    const post = await getPostById({ pageId });
-
-    if (post == null) {
-
-        return new Response("Post not found.", { status: 400 });
-    }
-
-    return new Response(JSON.stringify({ count: post.clapCount }), { status: 200 });
+    return new Response(JSON.stringify({ count: await getClap({ pageId }) }), { status: 200 });
 }
 
 export async function POST(req: NextRequest) {
@@ -29,12 +22,5 @@ export async function POST(req: NextRequest) {
         return new Response("Page id is required.", { status: 400 });
     }
 
-    const updatedClapCount = await incrementClapCount({ pageId });
-
-    if (updatedClapCount == null) {
-
-        return new Response("Post not found.", { status: 400 });
-    }
-
-    return new Response(JSON.stringify({ count: updatedClapCount }), { status: 200 });
+    return new Response(JSON.stringify({ count: await incrementClap({ pageId }) }), { status: 200 });
 }

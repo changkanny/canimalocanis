@@ -1,0 +1,13 @@
+.title {
+
+    color: var(--bs-body-color);
+    font-size: 2.3rem;
+    font-weight: bold;
+    text-decoration: none;
+    transition: color 0.5s ease;
+}
+
+.title:hover {
+
+    color: var(--bs-border-color);
+}

@@ -10,7 +10,8 @@ export interface Post {
     publishedAt: Date,
     updatedAt?: Date | null,
     thumbnail?: Thumbnail | null,
-    clapCount: number,
+    clap: number,
+    slug: string | null,
 }
 
 export interface Thumbnail {
