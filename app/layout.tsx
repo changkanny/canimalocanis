@@ -18,6 +18,9 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="jp" data-bs-theme="dark">
+            <head>
+                <link rel="alternate" type="application/rss+xml" title="RSS2.0" href="/feed.xml" />
+            </head>
             <body className={`${font.className}`}>
                 <Header />
                     {children}
